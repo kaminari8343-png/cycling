@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
+import { exportTripGpx } from '../../lib/gpx';
 import { deleteTrip, getPoints, getTrip } from '../../lib/db';
 import { avgSpeedKmh, formatDateTime, formatDistance, formatDuration } from '../../lib/format';
 import { colors, s } from '../../lib/ui';
@@ -46,6 +47,14 @@ export default function TripDetail() {
       },
     ]);
 
+  const exportGpx = async () => {
+    try {
+      await exportTripGpx(trip, `Ride ${formatDateTime(trip.startedAt)}`);
+    } catch (e) {
+      Alert.alert('書き出せませんでした', e instanceof Error ? e.message : String(e));
+    }
+  };
+
   return (
     <View style={s.screen}>
       <Stack.Screen options={{ title: formatDateTime(trip.startedAt) }} />
@@ -64,6 +73,9 @@ export default function TripDetail() {
           <Text style={s.text}>{formatDuration(dur)}</Text>
           <Text style={s.text}>{avgSpeedKmh(trip.distanceM, dur).toFixed(1)} km/h</Text>
         </View>
+        <Pressable style={s.button} onPress={exportGpx}>
+          <Text style={s.buttonText}>GPXで書き出す</Text>
+        </Pressable>
         <Pressable onPress={confirmDelete}>
           <Text style={{ color: colors.danger, textAlign: 'center' }}>この走行を削除</Text>
         </Pressable>
