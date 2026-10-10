@@ -2,17 +2,28 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { PLACE_LABEL, PlaceId } from '../../lib/constants';
-import { getAutoEnabled, getPlace, Place, setAutoEnabled, setPlace } from '../../lib/db';
+import {
+  getAutoEnabled,
+  getNotifyEnabled,
+  getPlace,
+  Place,
+  setAutoEnabled,
+  setNotifyEnabled,
+  setPlace,
+} from '../../lib/db';
+import { ensureNotificationPermission } from '../../lib/notify';
 import { ensurePermissions, getCurrentPlace, syncGeofences } from '../../lib/tracking';
 import { colors, s } from '../../lib/ui';
 
 export default function SettingsScreen() {
   const [auto, setAuto] = useState(false);
+  const [notif, setNotif] = useState(true);
   const [places, setPlaces] = useState<Record<PlaceId, Place | null>>({ home: null, work: null });
 
   useFocusEffect(
     useCallback(() => {
       setAuto(getAutoEnabled());
+      setNotif(getNotifyEnabled());
       setPlaces({ home: getPlace('home'), work: getPlace('work') });
     }, []),
   );
@@ -29,12 +40,22 @@ export default function SettingsScreen() {
           return;
         }
       }
+      if (on && getNotifyEnabled()) await ensureNotificationPermission();
       setAutoEnabled(on);
       setAuto(on);
       await syncGeofences();
     } catch (e) {
       Alert.alert('エラー', String(e));
     }
+  };
+
+  const toggleNotif = async (on: boolean) => {
+    if (on && !(await ensureNotificationPermission())) {
+      Alert.alert('権限が必要です', '通知を表示するには、設定アプリで通知を許可してください。');
+      return;
+    }
+    setNotifyEnabled(on);
+    setNotif(on);
   };
 
   const registerHere = async (id: PlaceId) => {
@@ -64,6 +85,13 @@ export default function SettingsScreen() {
         <Text style={s.sub}>
           自宅/会社の周辺(半径150m)を出ると記録を開始し、入ると停止して保存します。200m未満の移動は破棄されます。
         </Text>
+      </View>
+      <View style={s.card}>
+        <View style={s.row}>
+          <Text style={s.text}>出発・到着の通知</Text>
+          <Switch value={notif} onValueChange={toggleNotif} />
+        </View>
+        <Text style={s.sub}>自動記録の開始時と、保存時(距離・時間・平均速度)に通知します。</Text>
       </View>
       {(['home', 'work'] as PlaceId[]).map((id) => (
         <View key={id} style={s.card}>

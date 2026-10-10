@@ -96,6 +96,15 @@ export function setAutoEnabled(on: boolean) {
   setKv('auto', on ? '1' : '0');
 }
 
+/** 出発・到着通知。未設定ならON */
+export function getNotifyEnabled(): boolean {
+  return getKv('notify') !== '0';
+}
+
+export function setNotifyEnabled(on: boolean) {
+  setKv('notify', on ? '1' : '0');
+}
+
 // ---- 走行 ----
 
 export function getActiveTrip(): Trip | null {

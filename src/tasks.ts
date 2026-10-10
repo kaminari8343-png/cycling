@@ -2,7 +2,9 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { GEOFENCE_TASK, LOCATION_TASK, MAX_ACCURACY_M } from './lib/constants';
 import { addPoints, getActiveTrip } from './lib/db';
-import { startRecording, stopRecording } from './lib/tracking';
+import { avgSpeedKmh, formatDistance, formatDuration } from './lib/format';
+import { notify } from './lib/notify';
+import { placeLabel, startRecording, stopRecording } from './lib/tracking';
 
 // 位置情報の更新: 記録中の走行に点を追加する
 TaskManager.defineTask<{ locations: Location.LocationObject[] }>(
@@ -32,9 +34,23 @@ TaskManager.defineTask<{
   const { eventType, region } = data;
   const active = getActiveTrip();
   if (eventType === Location.LocationGeofencingEventType.Exit) {
-    if (!active) await startRecording(region.identifier ?? 'auto');
+    if (!active) {
+      const origin = region.identifier ?? 'auto';
+      await startRecording(origin);
+      await notify('出発', `${placeLabel(origin)}を出発しました。記録を開始します`);
+    }
   } else if (eventType === Location.LocationGeofencingEventType.Enter) {
     // 手動で開始した走行は自動では止めない
-    if (active && active.origin !== 'manual') await stopRecording(true);
+    if (active && active.origin !== 'manual') {
+      const trip = await stopRecording(true);
+      // 短すぎて破棄された走行は通知しない
+      if (trip) {
+        const sec = ((trip.endedAt ?? trip.startedAt) - trip.startedAt) / 1000;
+        await notify(
+          '到着',
+          `${placeLabel(region.identifier ?? '')}に到着: ${formatDistance(trip.distanceM)} / ${formatDuration(sec)} / 平均 ${avgSpeedKmh(trip.distanceM, sec).toFixed(1)} km/h`,
+        );
+      }
+    }
   }
 });
