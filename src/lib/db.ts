@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { MIN_TRIP_DISTANCE_M, PlaceId } from './constants';
+import { GEOFENCE_RADIUS_M, MIN_TRIP_DISTANCE_M, PlaceId } from './constants';
 import { haversine } from './geo';
 
 export type Trip = {
@@ -96,6 +96,22 @@ export function setAutoEnabled(on: boolean) {
   setKv('auto', on ? '1' : '0');
 }
 
+export function getRadius(): number {
+  return Number(getKv('radius')) || GEOFENCE_RADIUS_M;
+}
+
+export function setRadius(m: number) {
+  setKv('radius', String(m));
+}
+
+export function getMinDistance(): number {
+  return Number(getKv('minDistance')) || MIN_TRIP_DISTANCE_M;
+}
+
+export function setMinDistance(m: number) {
+  setKv('minDistance', String(m));
+}
+
 /** 出発・到着通知。未設定ならON */
 export function getNotifyEnabled(): boolean {
   return getKv('notify') !== '0';
@@ -167,7 +183,7 @@ export function finishTrip(tripId: number, discardIfShort: boolean): Trip | null
   const d = getDb();
   const row = d.getFirstSync<TripRow>('SELECT * FROM trips WHERE id = ?', tripId);
   if (!row) return null;
-  if (discardIfShort && row.distance_m < MIN_TRIP_DISTANCE_M) {
+  if (discardIfShort && row.distance_m < getMinDistance()) {
     d.runSync('DELETE FROM trips WHERE id = ?', tripId);
     return null;
   }

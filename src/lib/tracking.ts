@@ -1,12 +1,19 @@
 import * as Location from 'expo-location';
 import {
-  GEOFENCE_RADIUS_M,
   GEOFENCE_TASK,
   LOCATION_TASK,
   PLACE_LABEL,
   PlaceId,
 } from './constants';
-import { finishTrip, getActiveTrip, getAutoEnabled, getPlace, startTrip, Trip } from './db';
+import {
+  finishTrip,
+  getActiveTrip,
+  getAutoEnabled,
+  getPlace,
+  getRadius,
+  startTrip,
+  Trip,
+} from './db';
 
 export async function ensurePermissions(needBackground: boolean): Promise<boolean> {
   const fg = await Location.requestForegroundPermissionsAsync();
@@ -61,7 +68,7 @@ export async function syncGeofences() {
           identifier: id,
           latitude: p.latitude,
           longitude: p.longitude,
-          radius: GEOFENCE_RADIUS_M,
+          radius: getRadius(),
           notifyOnEnter: true,
           notifyOnExit: true,
         });
