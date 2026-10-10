@@ -1,29 +1,74 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
-import { PLACE_LABEL, PlaceId } from '../../lib/constants';
+import { MIN_DISTANCE_OPTIONS, PLACE_LABEL, PlaceId, RADIUS_OPTIONS } from '../../lib/constants';
 import {
   getAutoEnabled,
+  getMinDistance,
   getNotifyEnabled,
+  getRadius,
   getPlace,
   Place,
   setAutoEnabled,
+  setMinDistance,
   setNotifyEnabled,
   setPlace,
+  setRadius,
 } from '../../lib/db';
 import { ensureNotificationPermission } from '../../lib/notify';
 import { ensurePermissions, getCurrentPlace, syncGeofences } from '../../lib/tracking';
 import { colors, s } from '../../lib/ui';
 
+function Options({
+  values,
+  current,
+  unit,
+  onPick,
+}: {
+  values: number[];
+  current: number;
+  unit: string;
+  onPick: (v: number) => void;
+}) {
+  return (
+    <View style={[s.row, { gap: 8 }]}>
+      {values.map((v) => (
+        <Pressable
+          key={v}
+          onPress={() => onPick(v)}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            paddingVertical: 10,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: colors.primary,
+            backgroundColor: v === current ? colors.primary : 'transparent',
+          }}
+        >
+          <Text style={{ color: v === current ? '#fff' : colors.primary }}>
+            {v}
+            {unit}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 export default function SettingsScreen() {
   const [auto, setAuto] = useState(false);
   const [notif, setNotif] = useState(true);
+  const [radius, setRadiusState] = useState(getRadius());
+  const [minDist, setMinDistState] = useState(getMinDistance());
   const [places, setPlaces] = useState<Record<PlaceId, Place | null>>({ home: null, work: null });
 
   useFocusEffect(
     useCallback(() => {
       setAuto(getAutoEnabled());
       setNotif(getNotifyEnabled());
+      setRadiusState(getRadius());
+      setMinDistState(getMinDistance());
       setPlaces({ home: getPlace('home'), work: getPlace('work') });
     }, []),
   );
@@ -58,6 +103,21 @@ export default function SettingsScreen() {
     setNotif(on);
   };
 
+  const pickRadius = async (m: number) => {
+    setRadius(m);
+    setRadiusState(m);
+    try {
+      await syncGeofences();
+    } catch (e) {
+      Alert.alert('エラー', String(e));
+    }
+  };
+
+  const pickMinDist = (m: number) => {
+    setMinDistance(m);
+    setMinDistState(m);
+  };
+
   const registerHere = async (id: PlaceId) => {
     try {
       const p = await getCurrentPlace();
@@ -83,8 +143,16 @@ export default function SettingsScreen() {
           <Switch value={auto} onValueChange={toggleAuto} />
         </View>
         <Text style={s.sub}>
-          自宅/会社の周辺(半径150m)を出ると記録を開始し、入ると停止して保存します。200m未満の移動は破棄されます。
+          自宅/会社の周辺を出ると記録を開始し、入ると停止して保存します。
         </Text>
+      </View>
+      <View style={s.card}>
+        <Text style={s.text}>検知範囲(半径)</Text>
+        <Options values={RADIUS_OPTIONS} current={radius} unit="m" onPick={pickRadius} />
+        <Text style={s.sub}>広いほど誤検知が減りますが、出発の検知が遅れます。</Text>
+        <Text style={[s.text, { marginTop: 8 }]}>これより短い走行は破棄</Text>
+        <Options values={MIN_DISTANCE_OPTIONS} current={minDist} unit="m" onPick={pickMinDist} />
+        <Text style={s.sub}>自宅付近のGPSのふらつきによる誤記録を防ぎます。</Text>
       </View>
       <View style={s.card}>
         <View style={s.row}>
