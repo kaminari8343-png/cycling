@@ -1,0 +1,578 @@
+<title>あと何回 ひと晩</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one narrow column like a kitchen-counter notepad; clock and tonight's to-do strip on top, the evening's log in the middle, one action at the bottom. */
+  :root {
+    --bg: #eef1ef;
+    --surface: #e2e7e4;
+    --fg: #22302c;
+    --muted: #6b7a75;
+    --line: #c9d2ce;
+    --kid: #3b5794;
+    --accent: #2f6a5d;
+    --on-accent: #f4f7f6;
+    --night: rgba(18, 28, 40, 0.42);
+    --night-end: rgba(8, 12, 18, 0.94);
+    --end-fg: #d7dfdc;
+    --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    --font-kid: "Klee One", "Hiragino Maru Gothic ProN", "Zen Kaku Gothic New", sans-serif;
+    --font-clock: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151b1a;
+      --surface: #1e2725;
+      --fg: #dce4e1;
+      --muted: #8d9c97;
+      --line: #2f3b38;
+      --kid: #a3b8ea;
+      --accent: #6fb2a2;
+      --on-accent: #0f1715;
+      --night: rgba(0, 0, 0, 0.45);
+      --night-end: rgba(0, 0, 0, 0.94);
+      --end-fg: #c9d3cf;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151b1a;
+    --surface: #1e2725;
+    --fg: #dce4e1;
+    --muted: #8d9c97;
+    --line: #2f3b38;
+    --kid: #a3b8ea;
+    --accent: #6fb2a2;
+    --on-accent: #0f1715;
+    --night: rgba(0, 0, 0, 0.45);
+    --night-end: rgba(0, 0, 0, 0.94);
+    --end-fg: #c9d3cf;
+    color-scheme: dark;
+  }
+
+  html, body { min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--bg);
+  }
+
+  .dim {
+    position: fixed;
+    inset: 0;
+    background: var(--night);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 4s ease;
+    z-index: 0;
+  }
+  body.after .dim { opacity: 1; }
+  body.ended .dim { background: var(--night-end); opacity: 1; transition: opacity 2.5s ease; }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 34rem;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 9rem;
+  }
+
+  header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--bg);
+    padding-block: 14px 10px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 8px;
+    transition: background 4s ease;
+  }
+  .clock {
+    font-family: var(--font-clock);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.9rem;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .todo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .todo li.now { color: var(--fg); font-weight: 700; }
+  .todo li.done { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+  .log {
+    display: grid;
+    gap: 6px;
+    padding-block: 18px 8px;
+    transition: opacity 4s ease;
+  }
+  body.after .log { opacity: 0.42; }
+  .log p { margin: 0; min-width: 0; }
+  .log .task {
+    margin-top: 14px;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .log .kid {
+    font-family: var(--font-kid);
+    font-weight: 600;
+    color: var(--kid);
+    padding-left: 1.2em;
+  }
+  .log .phone {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .quiet {
+    display: grid;
+    gap: 14px;
+    padding-block: 22px 8px;
+  }
+  .quiet[hidden] { display: none !important; }
+  .quiet p { margin: 0; }
+  .room {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .room button {
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--fg);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 14px;
+    cursor: pointer;
+  }
+  .room button[aria-disabled="true"] { color: var(--muted); cursor: default; }
+  .room button:focus-visible, .act button:focus-visible, .again:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .seen { display: grid; gap: 6px; }
+  .seen p { color: var(--fg); }
+  .seen .other { padding-left: 1.2em; }
+
+  .act {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: 12px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    display: flex;
+    justify-content: center;
+  }
+  .act[hidden] { display: none !important; }
+  .act button {
+    font: inherit;
+    font-weight: 700;
+    font-size: 1.05rem;
+    min-width: 12rem;
+    padding: 14px 28px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--on-accent);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .act button:disabled { opacity: 0.45; cursor: default; }
+
+  .end {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-content: center;
+    gap: 28px;
+    text-align: center;
+    color: var(--end-fg);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .end[hidden] { display: none !important; }
+  .end .clock { font-size: 1.4rem; color: var(--end-fg); }
+  .again {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--end-fg);
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 4px 16px;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .fade-in { animation: fade 0.6s ease both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in { animation: none; }
+    .dim, .log, header { transition: none; }
+  }
+</style>
+
+<div class="dim" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <div class="clock" id="clock">18:42</div>
+    <ul class="todo" id="todo" aria-label="今夜やること"></ul>
+  </header>
+
+  <main>
+    <div class="log" id="log" aria-live="polite"></div>
+
+    <section class="quiet" id="quiet" hidden>
+      <div class="room" id="room"></div>
+      <div class="seen" id="seen" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+
+<div class="act" id="act">
+  <button type="button" id="go">はじめる</button>
+</div>
+
+<div class="end" id="end" hidden>
+  <div class="clock" id="endClock"></div>
+  <div><button type="button" class="again" id="again">もう一度</button></div>
+</div>
+
+<script>
+(function () {
+  // Step prefixes: "k:" child speaks, "p:" phone, otherwise the player's own action.
+  const TASKS = [
+    { name: "帰宅", verb: "つづける", from: "18:42", to: "18:50", steps: [
+      "鍵をあける。",
+      "k:おかえり！",
+      "鞄を置く。上着をかける。",
+      "k:ねえ、きょうね、",
+      "「先に手を洗って」",
+      "k:えー",
+      "洗面所まで背中を押す。",
+      "給食袋を出す。プリントを出す。"
+    ]},
+    { name: "夕飯をつくる", verb: "つくる", from: "18:50", to: "19:14", steps: [
+      "冷蔵庫をあける。にんじん、玉ねぎ、豚肉。",
+      "米をとぐ。",
+      "k:ねえ見て",
+      "k:犬かいた",
+      "横目で見る。茶色の犬。",
+      "玉ねぎを切る。",
+      "肉を炒める。",
+      "k:しっぽ、まだかいてない",
+      "火を弱める。",
+      "味噌汁を温め直す。",
+      "「ごはんだよ、片付けて」",
+      "k:いまいいとこなのに"
+    ]},
+    { name: "食べさせる", verb: "たべる", from: "19:14", to: "19:44", steps: [
+      "皿を並べる。",
+      "k:にんじんいらない",
+      "「ひとつだけ」",
+      "p:スマホが震える。「ごめん、今日も遅くなる」",
+      "自分も急いで食べる。",
+      "k:きょうね、ゆうくんがね、てつぼうでね",
+      "「うん」",
+      "k:くるってまわったの。さかあがり。",
+      "「すごいね。ほら、こぼれてる」",
+      "床を拭く。",
+      "k:ハルもできるようになるかな",
+      "「なるよ。早く食べちゃって」",
+      "時計を見る。"
+    ]},
+    { name: "片付け", verb: "あらう", from: "19:44", to: "19:56", steps: [
+      "皿を流しへ運ぶ。",
+      "洗う。",
+      "洗う。",
+      "k:ねえ、これなんてよむの",
+      "「あとでね」",
+      "洗う。",
+      "水筒を洗う。パッキンを外す。",
+      "布巾をかける。"
+    ]},
+    { name: "お風呂", verb: "いれる", from: "19:56", to: "20:26", steps: [
+      "湯をためる。",
+      "k:まだ入りたくない",
+      "「はい、ばんざい」",
+      "頭を洗う。",
+      "k:目にはいった！",
+      "シャワーで流す。",
+      "k:みて、もぐれる",
+      "「見てるよ」",
+      "k:10かぞえて",
+      "いち、に、さん、",
+      "し、ご、ろく、",
+      "しち、はち、",
+      "きゅう、じゅう。",
+      "k:もういっかい",
+      "「もう出るよ」",
+      "タオルでくるむ。"
+    ]},
+    { name: "歯みがき", verb: "みがく", from: "20:26", to: "20:33", steps: [
+      "k:じぶんでやる",
+      "待つ。",
+      "待つ。",
+      "「仕上げするよ」",
+      "k:まだみがいてるもん",
+      "仕上げみがき。上。下。",
+      "口をゆすがせる。"
+    ]},
+    { name: "あしたの準備", verb: "用意する", from: "20:33", to: "20:41", steps: [
+      "連絡帳を見る。「あしたは体育があります」",
+      "体操服を探す。",
+      "洗濯かごの底にある。",
+      "乾燥機に入れる。",
+      "k:パジャマ、きょうはくまのやつ",
+      "引き出しの奥からくまのパジャマを出す。"
+    ]},
+    { name: "絵本", verb: "よむ", from: "20:41", to: "20:53", steps: [
+      "k:これよんで",
+      "一ページ目。",
+      "二ページ目。",
+      "三ページ目。",
+      "おしまい。",
+      "k:もういっかい",
+      "一ページ目。",
+      "二ページ目と三ページ目を、いっしょにめくる。",
+      "k:とばしたでしょ",
+      "三ページ目。",
+      "おしまい。"
+    ]},
+    { name: "寝かしつけ", verb: "とんとん", from: "20:53", to: "21:12", steps: [
+      "電気を消す。",
+      "k:おみず",
+      "水を持ってくる。",
+      "もう一度横になる。",
+      "k:トイレ",
+      "トイレについていく。",
+      "もう一度横になる。",
+      "背中をとんとんする。",
+      "k:ねえ、あしたって何曜日？",
+      "「木曜日。もう寝よう」",
+      "とんとん。",
+      "とんとん。",
+      "k:あのね",
+      "「うん」",
+      "k:きょうの犬ね、",
+      "とんとん。",
+      "とんとん。",
+      "寝息が聞こえる。"
+    ]}
+  ];
+
+  const ROOM = [
+    { label: "寝顔", text: "口が少しあいている。くまのパジャマの、ボタンがひとつずれている。" },
+    { label: "テーブルの上の紙", text: "茶色の犬。しっぽがない。" },
+    { label: "絵本", text: "テーブルの上に、さっきの絵本。" },
+    { label: "玄関", text: "小さい靴が、片方だけ裏返っている。" },
+    { label: "連絡帳", text: "「あしたは体育があります」" },
+    { label: "乾燥機", text: "体操服が回っている。あと二十分。" }
+  ];
+
+  const PARTNER_FIRST = [
+    "玄関の鍵があく音。",
+    "o:ただいま",
+    "o:……寝た？"
+  ];
+  const PARTNER_REST = [
+    "o:そっか。よかった。",
+    "o:はー、今日も終わった。",
+    "冷蔵庫をあける音。",
+    "o:なにか残ってる？　あ、これ食べていい？",
+    "o:体操服、乾燥機？　助かる。",
+    "o:先にお風呂入っちゃうね。",
+    "廊下の足音が遠ざかる。"
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const log = $("log"), todo = $("todo"), clockEl = $("clock"), go = $("go"), act = $("act");
+  const quiet = $("quiet"), room = $("room"), seen = $("seen"), end = $("end"), endClock = $("endClock");
+
+  const toMin = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+  const fmt = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(Math.round(m) % 60).padStart(2, "0");
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  let ti, si, minutes, busy, started, timers;
+
+  function setClock(m) { minutes = m; clockEl.textContent = fmt(m); }
+
+  function renderTodo() {
+    todo.innerHTML = "";
+    TASKS.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.textContent = t.name;
+      if (i < ti) li.className = "done";
+      else if (i === ti && started) li.className = "now";
+      todo.appendChild(li);
+    });
+  }
+
+  function line(text, cls, into) {
+    const p = document.createElement("p");
+    p.textContent = text;
+    p.className = (cls ? cls + " " : "") + "fade-in";
+    (into || log).appendChild(p);
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    return p;
+  }
+
+  function show(step, into) {
+    if (step.startsWith("k:")) return line("「" + step.slice(2) + "」", "kid", into);
+    if (step.startsWith("p:")) return line(step.slice(2), "phone", into);
+    if (step.startsWith("o:")) return line("「" + step.slice(2) + "」", "other", into);
+    return line(step, "", into);
+  }
+
+  const isAuto = (s) => s && (s.startsWith("k:") || s.startsWith("p:"));
+
+  function startTask() {
+    const t = TASKS[ti];
+    line(t.name, "task");
+    renderTodo();
+    go.textContent = t.verb;
+  }
+
+  async function tap() {
+    if (busy) return;
+    if (!started) {
+      started = true;
+      log.innerHTML = "";
+      startTask();
+    }
+    const t = TASKS[ti];
+    const own = t.steps.filter((s) => !isAuto(s)).length;
+    const per = (toMin(t.to) - toMin(t.from)) / own;
+
+    show(t.steps[si]);
+    si += 1;
+    setClock(Math.min(toMin(t.to), minutes + per));
+
+    busy = true;
+    go.disabled = true;
+    while (si < t.steps.length && isAuto(t.steps[si])) {
+      await wait(700);
+      show(t.steps[si]);
+      si += 1;
+    }
+    await wait(250);
+    busy = false;
+    go.disabled = false;
+
+    if (si >= t.steps.length) {
+      setClock(toMin(t.to));
+      ti += 1;
+      si = 0;
+      if (ti < TASKS.length) startTask();
+      else afterSleep();
+    }
+  }
+
+  function afterSleep() {
+    renderTodo();
+    act.hidden = true;
+    document.body.classList.add("after");
+    let ticks = 0;
+    timers.push(setInterval(() => { ticks += 1; setClock(minutes + 1); }, 5000));
+
+    timers.push(setTimeout(() => {
+      quiet.hidden = false;
+      ROOM.forEach((r) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = r.label;
+        b.addEventListener("click", () => {
+          if (b.getAttribute("aria-disabled") === "true") return;
+          b.setAttribute("aria-disabled", "true");
+          line(r.text, "", seen);
+        });
+        room.appendChild(b);
+      });
+    }, 3500));
+
+    timers.push(setTimeout(partner, 38000));
+  }
+
+  async function partner() {
+    for (const s of PARTNER_FIRST) { show(s, seen); await wait(1400); }
+    act.hidden = false;
+    go.textContent = "うん";
+    go.onclick = async () => {
+      go.onclick = null;
+      act.hidden = true;
+      line("「うん」", "", seen);
+      await wait(900);
+      for (const s of PARTNER_REST) { show(s, seen); await wait(1700); }
+      await wait(1200);
+      act.hidden = false;
+      go.textContent = "電気を消す";
+      go.onclick = finish;
+    };
+  }
+
+  function finish() {
+    go.onclick = null;
+    act.hidden = true;
+    timers.forEach((t) => { clearInterval(t); clearTimeout(t); });
+    document.body.classList.add("ended");
+    setTimeout(() => {
+      endClock.textContent = fmt(minutes);
+      end.hidden = false;
+    }, 2600);
+  }
+
+  function reset() {
+    (timers || []).forEach((t) => { clearInterval(t); clearTimeout(t); });
+    timers = [];
+    ti = 0; si = 0; busy = false; started = false;
+    document.body.classList.remove("after", "ended");
+    end.hidden = true;
+    quiet.hidden = true;
+    room.innerHTML = "";
+    seen.innerHTML = "";
+    log.innerHTML = "";
+    line("仕事を終えて、家の前に着く。", "");
+    setClock(toMin(TASKS[0].from));
+    renderTodo();
+    act.hidden = false;
+    go.disabled = false;
+    go.textContent = "家に入る";
+    go.onclick = tap;
+    window.scrollTo(0, 0);
+  }
+
+  $("again").addEventListener("click", reset);
+  reset();
+})();
+</script>
