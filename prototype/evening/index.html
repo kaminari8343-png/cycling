@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-  /* Layout: a floor plan of the evening; the child sits on top, rooms below as a 2-column grid of tap targets, a status bar with the clock above and a three-line log below. */
+  /* Layout: a single column; the evening as a strip of half-hour blocks, the scene, the choices, then the "later" list like a sticky note at the bottom. */
   :root {
     --bg: #eef1ef;
     --card: #f8faf9;
@@ -12,10 +12,10 @@
     --muted: #6b7a75;
     --line: #c9d2ce;
     --kid: #3b5794;
-    --kid-soft: #dfe6f5;
     --accent: #2f6a5d;
     --on-accent: #f4f7f6;
-    --bar: #9fbfb6;
+    --note: #f3ecd2;
+    --note-fg: #5b4a1c;
     --night: rgba(18, 28, 40, 0.55);
     --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
     --font-kid: "Klee One", "Hiragino Maru Gothic ProN", "Zen Kaku Gothic New", sans-serif;
@@ -25,95 +25,98 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #151b1a; --card: #1d2624; --fg: #dce4e1; --muted: #8d9c97; --line: #2f3b38;
-      --kid: #a3b8ea; --kid-soft: #26304a; --accent: #6fb2a2; --on-accent: #0f1715; --bar: #3f6b60;
-      --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
+      --kid: #a3b8ea; --accent: #6fb2a2; --on-accent: #0f1715;
+      --note: #33301f; --note-fg: #e3d6a6; --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #151b1a; --card: #1d2624; --fg: #dce4e1; --muted: #8d9c97; --line: #2f3b38;
-    --kid: #a3b8ea; --kid-soft: #26304a; --accent: #6fb2a2; --on-accent: #0f1715; --bar: #3f6b60;
-    --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
+    --kid: #a3b8ea; --accent: #6fb2a2; --on-accent: #0f1715;
+    --note: #33301f; --note-fg: #e3d6a6; --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
   }
 
   html, body { min-height: 100%; }
-  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; -webkit-user-select: none; user-select: none; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.65; }
 
   .wrap {
     max-width: 30rem;
     margin: 0 auto;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 16px 24px;
+    padding-block: 18px 32px;
   }
   .screen[hidden] { display: none !important; }
-
-  .title { font-family: var(--font-title); font-size: 2.4rem; letter-spacing: 0.12em; margin: 16vh 0 8px; }
   .muted { color: var(--muted); }
-  .how { margin: 20px 0 28px; padding: 0; list-style: none; display: grid; gap: 4px; }
+
+  .title { font-family: var(--font-title); font-size: 2.4rem; letter-spacing: 0.12em; margin: 16vh 0 10px; }
   .btn {
-    font: inherit; font-weight: 700; font-size: 1.05rem;
-    padding: 13px 28px; border: 0; border-radius: 6px;
+    font: inherit; font-weight: 700; font-size: 1.02rem;
+    padding: 12px 26px; border: 0; border-radius: 6px;
     background: var(--accent); color: var(--on-accent); cursor: pointer;
   }
-  .btn:focus-visible, .room:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .btn:focus-visible, .choice:focus-visible, .later button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  #sTitle .btn { margin-top: 24px; }
 
   .year { margin-top: 22vh; display: grid; gap: 10px; }
   .year .age { font-family: var(--font-title); font-size: 2.6rem; letter-spacing: 0.08em; line-height: 1.2; }
-  .year .grow { min-height: 1.6em; }
   .year .btn { justify-self: start; margin-top: 18px; }
 
-  .status { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+  .status { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .status .who { font-family: var(--font-title); font-size: 1.15rem; letter-spacing: 0.06em; }
-  .status .clock { font-family: var(--font-num); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
-  .status .lv { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .status .clock { font-family: var(--font-num); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 
-  .rooms { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .room {
-    position: relative; text-align: left; font: inherit; color: inherit; cursor: pointer;
-    background: var(--card); border: 1.5px solid var(--line); border-radius: 8px;
-    padding: 10px 12px 14px; min-height: 5.4rem; display: grid; align-content: start; gap: 2px;
-    touch-action: manipulation; overflow: hidden;
+  .strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 8px 0 4px; }
+  .blk { height: 30px; border-radius: 3px; background: var(--card); border: 1px solid var(--line); font-size: 0.68rem; color: var(--muted); display: grid; place-items: center; overflow: hidden; white-space: nowrap; }
+  .blk.fixed { background: var(--line); color: var(--fg); }
+  .blk.now { border: 2px solid var(--accent); }
+  .blk.past { opacity: 0.4; }
+  .times { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); font-size: 0.68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .scene { margin: 18px 0 14px; min-height: 6.5em; display: grid; gap: 4px; align-content: start; }
+  .scene p { margin: 0; }
+  .scene .k { font-family: var(--font-kid); color: var(--kid); font-size: 1.1rem; }
+  .scene .old { opacity: 0.45; }
+
+  .choices { display: grid; gap: 8px; }
+  .choice {
+    font: inherit; text-align: left; cursor: pointer; color: var(--fg);
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 14px;
+    display: grid; gap: 0;
   }
-  .room.here { border-color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
-  .room .name { font-weight: 700; font-size: 0.9rem; }
-  .room .task { font-size: 0.85rem; color: var(--muted); min-height: 1.4em; }
-  .room .here-tag { position: absolute; top: 8px; right: 10px; font-size: 0.7rem; color: var(--accent); font-weight: 700; }
-  .room .prog { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--bar); width: 0; }
-  .room.haru { grid-column: 1 / -1; min-height: 6.6rem; }
-  .bubble {
-    justify-self: start; margin-top: 4px; padding: 4px 12px; border-radius: 14px;
-    background: var(--kid-soft); color: var(--kid); font-family: var(--font-kid); font-size: 1.05rem;
-    transition: opacity 0.3s ease;
+  .choice small { color: var(--muted); font-size: 0.8rem; }
+  .choice.kid { border-color: var(--kid); }
+  .choice.kid b { color: var(--kid); }
+  .choice:disabled { opacity: 0.5; cursor: default; }
+
+  .later { margin-top: 22px; background: var(--note); color: var(--note-fg); border-radius: 4px; padding: 10px 14px 12px; }
+  .later h2 { font-size: 0.85rem; margin: 0 0 6px; letter-spacing: 0.08em; }
+  .later ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .later button {
+    font: inherit; color: inherit; background: transparent; border: 0; padding: 2px 0; cursor: pointer;
+    text-align: left; width: 100%; display: flex; justify-content: space-between; gap: 12px;
   }
-  .bubble[hidden] { display: none !important; }
-  .life { position: absolute; left: 0; top: 0; height: 3px; background: var(--kid); width: 0; }
+  .later button span:last-child { opacity: 0.7; font-size: 0.8rem; white-space: nowrap; }
+  .later button:disabled { cursor: default; }
+  .later .empty { opacity: 0.7; font-size: 0.85rem; }
+  .later .hint { opacity: 0.7; font-size: 0.75rem; margin-top: 6px; }
+  .worknote { margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
 
-  .log { margin-top: 14px; min-height: 5.2em; display: grid; gap: 2px; align-content: start; font-size: 0.9rem; }
-  .log p { margin: 0; }
-  .log p:nth-last-child(n+2) { opacity: 0.55; }
-  .log p:nth-last-child(n+3) { opacity: 0.3; }
-  .log .k { color: var(--kid); font-family: var(--font-kid); }
-
-  .dim { position: fixed; inset: 0; background: var(--night); opacity: 0; pointer-events: none; transition: opacity 1.4s ease; z-index: 30; }
+  .dim { position: fixed; inset: 0; background: var(--night); opacity: 0; pointer-events: none; transition: opacity 1.2s ease; z-index: 30; }
   body.dark .dim { opacity: 1; }
 
-  .end h1 { font-family: var(--font-title); font-size: 2rem; letter-spacing: 0.12em; margin: 24px 0 18px; }
-  .chart { overflow-x: auto; }
-  .grid { display: grid; grid-template-columns: 4.6rem repeat(9, minmax(1.7rem, 1fr)); gap: 0; min-width: 0; }
-  .grid > div { padding: 6px 2px; border-bottom: 1px solid var(--line); min-width: 0; }
-  .grid .h { font-size: 0.75rem; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
-  .grid .lab { font-size: 0.8rem; padding-right: 6px; }
-  .grid .lab.kid { font-family: var(--font-kid); color: var(--kid); font-size: 0.9rem; }
-  .dots { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-content: center; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--kid); }
-  .dot.miss { background: transparent; box-shadow: inset 0 0 0 1.2px var(--muted); }
-  .load { display: flex; justify-content: center; align-items: flex-end; height: 2.6rem; }
-  .load span { width: 8px; background: var(--bar); border-radius: 2px 2px 0 0; }
-  .num { text-align: center; font-family: var(--font-num); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
-  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 12px 0 28px; font-size: 0.8rem; color: var(--muted); align-items: center; }
-  .legend .dot { display: inline-block; margin-right: 4px; vertical-align: middle; }
+  .end h1 { font-family: var(--font-title); font-size: 2rem; letter-spacing: 0.12em; margin: 20px 0 18px; }
+  .end section { margin-bottom: 26px; }
+  .end h2 { font-size: 0.95rem; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .end ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .end li { display: flex; justify-content: space-between; gap: 12px; }
+  .end li span:last-child { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+  .end .note { background: var(--note); color: var(--note-fg); border-radius: 4px; padding: 10px 14px; }
+  .end .note h2 { border-color: transparent; }
+  .end .note li span:last-child { color: inherit; opacity: 0.7; }
 
-  @media (prefers-reduced-motion: reduce) { .dim, .bubble { transition: none; } }
+  .fade-in { animation: fade 0.5s ease both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } .dim { transition: none; } }
 </style>
 
 <div class="dim" aria-hidden="true"></div>
@@ -121,19 +124,15 @@
 <div class="wrap">
   <section class="screen" id="sTitle">
     <h1 class="title">あと何回</h1>
-    <p class="muted">ハルが4歳から12歳になるまで、年に一度の夜。</p>
-    <ul class="how">
-      <li>部屋を押すと、そこで手を動かします。</li>
-      <li>ハルを押すと、ハルの相手をします。</li>
-      <li>家事が全部終わって、ハルが寝たら、その夜はおしまい。</li>
-    </ul>
+    <p>ハルが4歳から12歳になるまでの、ある夜たち。</p>
+    <p class="muted">夜は30分ずつ進みます。空いている時間を、何に使うか選んでください。</p>
     <button type="button" class="btn" id="bStart">はじめる</button>
   </section>
 
   <section class="screen" id="sYear" hidden>
     <div class="year">
       <div class="age" id="yAge"></div>
-      <div class="grow muted" id="yGrow"></div>
+      <div class="muted" id="yNote"></div>
       <button type="button" class="btn" id="bNight">夜をはじめる</button>
     </div>
   </section>
@@ -141,325 +140,307 @@
   <section class="screen" id="sPlay" hidden>
     <div class="status">
       <span class="who" id="pWho"></span>
-      <span class="lv" id="pLv"></span>
       <span class="clock" id="pClock">18:00</span>
     </div>
-    <div class="rooms" id="rooms"></div>
-    <div class="log" id="log" aria-live="polite"></div>
+    <div class="strip" id="strip"></div>
+    <div class="times"><span>18:00</span><span>18:30</span><span>19:00</span><span>19:30</span><span>20:00</span><span>20:30</span></div>
+    <div class="scene" id="scene" aria-live="polite"></div>
+    <div class="choices" id="choices"></div>
+    <div class="later" id="later">
+      <h2>あとでね、と言ったこと</h2>
+      <ul id="laterList"></ul>
+      <div class="hint" id="laterHint" hidden>押すと、この時間をそれに使います。</div>
+    </div>
+    <div class="worknote" id="workNote"></div>
   </section>
 
   <section class="screen end" id="sEnd" hidden>
     <h1>あと何回</h1>
-    <div class="chart"><div class="grid" id="chart"></div></div>
-    <div class="legend"><span><span class="dot"></span>応えた</span><span><span class="dot miss"></span>消えた</span></div>
+    <section><h2>仕事で積み上がったこと</h2><ul id="eWork"></ul></section>
+    <section><h2>ハルといっしょにやったこと</h2><ul id="eDone"></ul></section>
+    <section class="note"><h2>あとでね、と言ったこと</h2><ul id="eLater"></ul></section>
     <button type="button" class="btn" id="bAgain">もう一度</button>
   </section>
 </div>
 
 <script>
 (function () {
-  const MIN_PER_SEC = 3;          // 18:00-22:00 runs in 80 seconds
-  const END_MIN = 240;
-  const WORK_SEC = 6;             // seconds at the desk per work level
-  const SPEED_PER_LV = 0.06;      // each work level makes housework faster
-  const ANSWER_SEC = 2.5;
-  const REQ_LIFE = 5;
-
-  const YEARS = [
-    { age: 4, grow: "" },
-    { age: 5, grow: "補助輪なしで自転車に乗れるようになった。" },
-    { age: 6, grow: "ひらがなが全部書けるようになった。" },
-    { age: 7, grow: "さかあがりができるようになった。" },
-    { age: 8, grow: "一人でお風呂に入れるようになった。" },
-    { age: 9, grow: "一人で寝られるようになった。" },
-    { age: 10, grow: "あしたの準備を自分でするようになった。" },
-    { age: 11, grow: "電車で一人で出かけるようになった。" },
-    { age: 12, grow: "中学の制服を着た。" }
+  // Each night has six half-hour blocks (18:00-21:00). Fixed blocks are housework that happens on its own.
+  const NIGHTS = [
+    { age: 4, note: "", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
+    { age: 5, note: "補助輪なしで自転車に乗れるようになった。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
+    { age: 6, note: "ひらがなが全部書けるようになった。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
+    { age: 7, note: "小学校に通いはじめて一年。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
+    { age: 8, note: "一人でお風呂に入るようになった。", fixed: { 0: "夕飯", 5: "おやすみ" } },
+    { age: 10, note: "一人で寝るようになった。", fixed: { 0: "夕飯" } },
+    { age: 12, note: "中学の制服を買った。", fixed: { 0: "夕飯" }, roomFrom: 4 }
   ];
 
-  const ROOMS = [
-    { id: "haru", name: "ハル" },
-    { id: "kitchen", name: "キッチン" },
-    { id: "bath", name: "お風呂" },
-    { id: "laundry", name: "洗濯" },
-    { id: "living", name: "リビング" },
-    { id: "bedroom", name: "寝室" },
-    { id: "desk", name: "仕事の机" }
+  // ask: ages the child asks it. until: the last age it can still happen.
+  const REQS = [
+    { id: "dakko", ask: [4, 5], until: 5, say: "だっこ", again: "ねえ、だっこは？", act: "抱っこする", label: "だっこ",
+      ok: "抱きあげる。重い。しばらく下ろさない。", late: "「え、いいよ。重いでしょ」" },
+    { id: "ehon", ask: [4, 6], until: 6, say: "この絵本よんで", again: "絵本、まだ？", act: "絵本を読む", label: "絵本を読む",
+      ok: "読む。もう一回と言われて、もう一回。", late: "「それ、もう読まないよ」" },
+    { id: "inu", ask: [4, 5], until: 5, say: "見て、犬かいた", again: "犬の絵、見た？", act: "絵を見る", label: "犬の絵を見る",
+      ok: "茶色の犬。しっぽがない。「しっぽはあしたかく」", late: "「犬？ どの絵？」" },
+    { id: "neru", ask: [4, 7], until: 7, say: "きょういっしょにねて", again: "ねえ、いっしょにねてくれる？", act: "いっしょに寝る", label: "いっしょに寝る",
+      ok: "狭いベッドで、背中をくっつけて寝る。", late: "「ひとりで寝れるってば」" },
+    { id: "sakaagari", ask: [6, 7], until: 7, say: "さかあがり、見て。こんど公園で", again: "公園、いつ行く？", act: "公園に行く", label: "公園でさかあがりを見る",
+      ok: "暗くなりかけの公園。三回目で回った。", late: "「さかあがり？ もう普通にできるよ」" },
+    { id: "game", ask: [8, 10], until: 10, say: "このゲーム、いっしょにやろ", again: "ゲーム、やらないの？", act: "ゲームをする", label: "いっしょにゲーム",
+      ok: "負ける。もう一回と言って、また負ける。", late: "「あー、それもうやってない」" },
+    { id: "tsuri", ask: [8, 10], until: 12, say: "こんど釣りに行きたい", again: "釣りの話、覚えてる？", act: "釣りの計画を立てる", label: "釣りに行く",
+      ok: "次の日曜、釣りに行く約束をした。地図を二人で見る。", late: "" },
+    { id: "hanashi", ask: [10, 12], until: 12, say: "ちょっと話があるんだけど", again: "……やっぱりいい", act: "話を聞く", label: "話を聞く",
+      ok: "部屋の床に座って、友だちのことを聞く。", late: "" }
   ];
 
-  const REQ = {
-    dakko:   { label: "だっこ",   ages: [4, 6],  w: (a) => 3, say: ["だっこ", "だっこして", "つかれた、だっこ"], ans: "抱きあげる。" },
-    ehon:    { label: "絵本",     ages: [4, 7],  w: (a) => 2, after: 120, say: ["これよんで", "もういっかいよんで"], ans: "絵本を読む。" },
-    asobo:   { label: "あそぼ",   ages: [4, 9],  w: (a) => 3, say: ["あそぼ", "ブロックしよ", "おにごっこしよ", "トランプしよ"], ans: "少しだけ遊ぶ。" },
-    mite:    { label: "ねえ見て", ages: [4, 10], w: (a) => 3, say: ["ねえ見て", "見て見て", "ねえ見て、これ", "ねえ見て、この動画"], ans: "見る。" },
-    hanashi: { label: "きょうね", ages: [4, 12], w: (a) => (a >= 11 ? 3 : 2), say: ["きょうね、", "あのね", "ねえ、きいて", "きょうさ、"], ans: "話を聞く。" },
-    soudan:  { label: "相談",     ages: [11, 12], w: (a) => 2, say: ["ちょっと相談があるんだけど", "ねえ、ちょっといい？"], ans: "話を聞く。" }
-  };
-  const REQ_ORDER = ["dakko", "ehon", "asobo", "mite", "hanashi", "soudan"];
-
-  function makeChores(age) {
-    const c = [];
-    c.push({ id: "dinner", room: "kitchen", name: "夕飯をつくる", need: 12, from: 0, done: "夕飯ができた。" });
-    c.push({ id: "cleanup", room: "kitchen", name: "片付ける", need: age >= 11 ? 3 : 6, from: 0, after: "dinner", done: age >= 11 ? "ハルが皿を運んでくれた。" : "片付いた。" });
-    c.push({ id: "laundry", room: "laundry", name: "洗濯物を干す", need: 8, from: 0, done: "洗濯物を干した。" });
-    if (age <= 7) c.push({ id: "bath", room: "bath", name: "お風呂に入れる", need: 10, from: 90, done: "お風呂が終わった。" });
-    if (age >= 6 && age <= 10) c.push({ id: "homework", room: "living", name: "宿題を見る", need: 5, from: 60, done: "宿題を見た。" });
-    if (age <= 9) c.push({ id: "prep", room: "living", name: "あしたの準備", need: 5, from: 120, done: "あしたの準備をした。" });
-    if (age <= 8) c.push({ id: "bed", room: "bedroom", name: "寝かしつける", need: 10, from: 150, sleeps: true, done: "寝息が聞こえる。" });
-    else if (age <= 10) c.push({ id: "bed", room: "bedroom", name: "おやすみを言う", need: 2, from: 165, sleeps: true, done: "「おやすみ」" });
-    c.forEach((x) => { x.prog = 0; x.finished = false; });
-    return c;
-  }
+  const WORK = [
+    ["資料をつくる", "資料をつくった。"],
+    ["メールを返す", "メールを返した。"],
+    ["企画書を直す", "企画書を直した。"],
+    ["見積もりを出す", "見積もりを出した。"],
+    ["来週の準備をする", "来週の準備をした。"]
+  ];
+  const WORK_MILESTONES = [
+    [2, "見積もりを一人で出せるようになった"],
+    [4, "後輩がついた"],
+    [6, "小さな案件を任された"],
+    [9, "チームを持った"],
+    [12, "大きな案件がまとまった"],
+    [15, "名前で指名されるようになった"],
+    [18, "新しい部署を任された"]
+  ];
+  const REST = "スマホを見る。十五分のつもりが、三十分。";
 
   const $ = (id) => document.getElementById(id);
-  const screens = ["sTitle", "sYear", "sPlay", "sEnd"];
-  function showScreen(id) { screens.forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
-  const fmt = (m) => { const t = 18 * 60 + Math.floor(m); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
-  const pick = (a) => a[Math.floor(Math.random() * a.length)];
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  // persistent across the whole game
-  let yi, workLv, workProg, rec, choreLoad;
-  // per night
-  let clock, here, chores, awake, req, spawnIn, running, ending;
-  const roomEls = {};
+  let ni, slot, work, workLog, later, done, current, locked, tonight;
 
-  function buildRooms() {
-    const box = $("rooms");
-    box.innerHTML = "";
-    ROOMS.forEach((r) => {
+  const night = () => NIGHTS[ni];
+  const age = () => night().age;
+  const clockOf = (s) => { const m = 18 * 60 + s * 30; return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); };
+  const inRoom = () => night().roomFrom != null && slot >= night().roomFrom;
+
+  function show(id) { ["sTitle", "sYear", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+
+  function say(text, kid) {
+    const sc = $("scene");
+    sc.querySelectorAll("p").forEach((p) => p.classList.add("old"));
+    while (sc.children.length > 3) sc.removeChild(sc.firstChild);
+    const p = document.createElement("p");
+    p.className = (kid ? "k " : "") + "fade-in";
+    p.textContent = text;
+    sc.appendChild(p);
+  }
+
+  function renderStrip() {
+    const st = $("strip");
+    st.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const b = document.createElement("div");
+      const f = night().fixed[i];
+      b.className = "blk" + (f ? " fixed" : "") + (i === slot ? " now" : "") + (i < slot ? " past" : "");
+      b.textContent = f || "";
+      st.appendChild(b);
+    }
+    $("pClock").textContent = clockOf(Math.min(slot, 6));
+  }
+
+  function renderLater(interactive) {
+    const ul = $("laterList");
+    ul.innerHTML = "";
+    $("laterHint").hidden = !(interactive && later.length);
+    if (!later.length) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "まだない";
+      ul.appendChild(li);
+      return;
+    }
+    later.forEach((item) => {
+      const li = document.createElement("li");
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "room" + (r.id === "haru" ? " haru" : "");
-      b.innerHTML = '<span class="name"></span><span class="task"></span><span class="here-tag" hidden>ここ</span><span class="prog"></span>' +
-        (r.id === "haru" ? '<span class="life"></span><span class="bubble" hidden></span>' : "");
-      b.querySelector(".name").textContent = r.name;
-      b.addEventListener("pointerdown", (e) => { e.preventDefault(); here = r.id; });
-      b.addEventListener("click", () => { here = r.id; });
-      box.appendChild(b);
-      roomEls[r.id] = {
-        el: b, task: b.querySelector(".task"), tag: b.querySelector(".here-tag"), prog: b.querySelector(".prog"),
-        life: b.querySelector(".life"), bubble: b.querySelector(".bubble")
-      };
+      b.disabled = !interactive;
+      b.innerHTML = "<span></span><span></span>";
+      b.children[0].textContent = item.req.label;
+      b.children[1].textContent = item.age + "歳のとき";
+      b.addEventListener("click", () => choose({ kind: "later", item }));
+      li.appendChild(b);
+      ul.appendChild(li);
     });
   }
 
-  function log(text, kid) {
-    const box = $("log");
-    const p = document.createElement("p");
-    p.textContent = text;
-    if (kid) p.className = "k";
-    box.appendChild(p);
-    while (box.children.length > 3) box.removeChild(box.firstChild);
+  function renderWork() {
+    const latest = workLog[workLog.length - 1];
+    $("workNote").textContent = "仕事：" + (latest || "まだこれから");
   }
 
-  const age = () => YEARS[yi].age;
-  const available = (c) => !c.finished && clock >= c.from && (!c.after || chores.find((x) => x.id === c.after).finished);
-  const roomChore = (id) => chores.find((c) => c.room === id && available(c)) || null;
-  const nextInRoom = (id) => chores.find((c) => c.room === id && !c.finished) || null;
-
-  function spawnInterval() { return 2.5 + (age() - 4) * 1.1 + Math.random() * 2.5; }
-
-  function spawn() {
+  function eligibleReq() {
     const a = age();
-    const pool = [];
-    REQ_ORDER.forEach((k) => {
-      const r = REQ[k];
-      if (a < r.ages[0] || a > r.ages[1]) return;
-      if (r.after && clock < r.after) return;
-      for (let i = 0; i < r.w(a); i++) pool.push(k);
-    });
-    if (!pool.length) return;
-    const k = pick(pool);
-    req = { k, text: pick(REQ[k].say.slice(0, a >= 9 ? undefined : 3)), life: REQ_LIFE, prog: 0 };
+    if (inRoom()) return null;
+    const chance = a <= 7 ? 1 : a <= 8 ? 0.85 : a <= 10 ? 0.65 : 0.5;
+    if (Math.random() > chance) return null;
+    const pool = REQS.filter((r) => a >= r.ask[0] && a <= r.ask[1] && !tonight.has(r.id));
+    if (!pool.length) return null;
+    const notPending = pool.filter((r) => !later.some((l) => l.req.id === r.id));
+    return pick(notPending.length && Math.random() < 0.7 ? notPending : pool);
   }
 
-  function record(k, answered) { rec[k][yi].push(answered); }
-
-  function startNight() {
-    clock = 0; here = null; chores = makeChores(age()); awake = true; req = null;
-    spawnIn = 3; ending = false;
-    choreLoad[yi] = chores.reduce((s, c) => s + c.need, 0);
-    $("pWho").textContent = "ハル " + age() + "歳";
-    $("log").innerHTML = "";
-    log("ただいま。");
-    showScreen("sPlay");
-    running = true;
+  function button(html, cls, onClick) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice" + (cls ? " " + cls : "");
+    b.innerHTML = html;
+    b.addEventListener("click", onClick);
+    return b;
   }
 
-  function update(dt) {
-    clock = Math.min(END_MIN, clock + dt * MIN_PER_SEC);
-    const speed = 1 + SPEED_PER_LV * workLv;
+  function fixedLine(f) {
+    if (f === "夕飯") return age() >= 10 ? "夕飯。ハルはおかわりをする。" : "夕飯をつくって、食べさせる。";
+    if (f === "お風呂") return "お風呂に入れる。";
+    if (f === "寝かしつけ") return "寝かしつける。";
+    if (f === "おやすみ") return "「おやすみ」";
+    return f + "。";
+  }
 
-    if (here === "desk") {
-      workProg += dt;
-      if (workProg >= WORK_SEC) { workProg = 0; workLv += 1; log("仕事が少し進んだ。"); }
-    } else if (here === "haru") {
-      if (req && awake) {
-        req.prog += dt;
-        if (req.prog >= ANSWER_SEC) { record(req.k, true); log(REQ[req.k].ans); req = null; spawnIn = spawnInterval(); }
-      }
-    } else if (here) {
-      const c = roomChore(here);
-      if (c) {
-        c.prog += dt * speed;
-        if (c.prog >= c.need) {
-          c.finished = true;
-          log(c.done);
-          if (c.sleeps) { awake = false; if (req) req = null; }
-        }
-      }
+  async function nextSlot() {
+    locked = false;
+    renderStrip();
+    if (slot >= 6) return endNight();
+
+    const fixed = night().fixed[slot];
+    const box = $("choices");
+    box.innerHTML = "";
+    if (fixed) {
+      renderLater(false);
+      say(fixedLine(fixed));
+      await wait(reduce ? 500 : 1500);
+      slot += 1;
+      return nextSlot();
     }
 
-    if (awake && age() >= 11 && clock >= 210) {
-      awake = false; req = null; log("ハルは部屋に行った。");
+    current = eligibleReq();
+    if (current) {
+      const pending = later.some((l) => l.req.id === current.id);
+      say("「" + (pending ? current.again : current.say) + "」", true);
+      box.appendChild(button("<b>" + esc(current.act) + "</b>", "kid", () => choose({ kind: "req" })));
+    } else if (inRoom()) {
+      say("ハルは部屋にいる。");
+    } else {
+      say(age() >= 10 ? "ハルはソファでスマホを見ている。" : "ハルはひとりで遊んでいる。");
     }
+    const w = WORK[work % WORK.length][0];
+    box.appendChild(button("<b>仕事をする</b><small>" + esc(w) + "</small>", "", () => choose({ kind: "work" })));
+    box.appendChild(button("<b>少し休む</b>", "", () => choose({ kind: "rest" })));
+    renderLater(true);
+  }
 
-    if (awake) {
-      if (req) {
-        if (here !== "haru") req.life -= dt; else req.life -= dt * 0.35;
-        if (req.life <= 0) { record(req.k, false); req = null; spawnIn = spawnInterval(); }
+  async function choose(c) {
+    if (locked) return;
+    locked = true;
+    $("choices").querySelectorAll("button").forEach((b) => { b.disabled = true; });
+    renderLater(false);
+
+    const answersCurrent = c.kind === "req" || (c.kind === "later" && current && c.item.req.id === current.id);
+    const deferred = current && !answersCurrent;
+    if (deferred) { say("「あとでね」"); await wait(reduce ? 200 : 700); }
+
+    if (c.kind === "req") {
+      say(current.ok);
+      done.push({ label: current.label, age: age() });
+      tonight.add(current.id);
+      later = later.filter((l) => l.req.id !== current.id);
+    } else if (c.kind === "work") {
+      say(WORK[work % WORK.length][1]);
+      work += 1;
+      const m = WORK_MILESTONES.find(([n]) => n === work);
+      if (m) { workLog.push(m[1]); await wait(reduce ? 200 : 600); say(m[1] + "。"); }
+    } else if (c.kind === "rest") {
+      say(REST);
+    } else if (c.kind === "later") {
+      const item = c.item;
+      later = later.filter((l) => l !== item);
+      if (age() <= item.req.until) {
+        say(item.req.ok);
+        done.push({ label: item.req.label, age: age() });
+        tonight.add(item.req.id);
       } else {
-        spawnIn -= dt;
-        if (spawnIn <= 0) {
-          spawn();
-          if (req) log("「" + req.text + "」", true);
-          else spawnIn = spawnInterval();
-        }
+        say(item.req.late, true);
       }
     }
 
-    const allDone = chores.every((c) => c.finished);
-    if ((!awake && allDone) || clock >= END_MIN) endNight();
-  }
-
-  function render() {
-    $("pClock").textContent = fmt(clock);
-    $("pLv").textContent = "仕事 Lv." + workLv;
-    ROOMS.forEach((r) => {
-      const v = roomEls[r.id];
-      const isHere = here === r.id;
-      v.el.classList.toggle("here", isHere);
-      v.tag.hidden = !isHere;
-      if (r.id === "haru") {
-        if (!awake) {
-          v.task.textContent = age() >= 11 ? "部屋にいる" : "寝ている";
-          v.bubble.hidden = true; v.life.style.width = "0"; v.prog.style.width = "0";
-        } else if (req) {
-          v.task.textContent = "";
-          v.bubble.hidden = false;
-          v.bubble.textContent = req.text;
-          v.bubble.style.opacity = Math.min(1, req.life / 1.5);
-          v.life.style.width = (100 * req.life / REQ_LIFE) + "%";
-          v.prog.style.width = (100 * req.prog / ANSWER_SEC) + "%";
-        } else {
-          v.task.textContent = age() >= 11 ? "スマホを見ている" : "ひとりで遊んでいる";
-          v.bubble.hidden = true; v.life.style.width = "0"; v.prog.style.width = "0";
-        }
-        return;
-      }
-      if (r.id === "desk") {
-        v.task.textContent = "メールを返す";
-        v.prog.style.width = (100 * workProg / WORK_SEC) + "%";
-        return;
-      }
-      const c = roomChore(r.id);
-      if (c) {
-        v.task.textContent = c.name;
-        v.prog.style.width = (100 * c.prog / c.need) + "%";
-      } else {
-        const n = nextInRoom(r.id);
-        v.task.textContent = n ? (n.after ? "あとで" : fmt(n.from) + "から") : "—";
-        v.prog.style.width = "0";
-      }
-    });
+    if (deferred && !later.some((l) => l.req.id === current.id)) later.push({ req: current, age: age() });
+    current = null;
+    renderLater(false);
+    renderWork();
+    await wait(reduce ? 400 : 1700);
+    slot += 1;
+    nextSlot();
   }
 
   async function endNight() {
-    if (ending) return;
-    ending = true;
-    running = false;
-    if (req) { record(req.k, false); req = null; }
-    const left = chores.filter((c) => !c.finished);
-    if (left.length) log(left.map((c) => c.name).join("、") + "は、あしたに回す。");
-    await wait(1400);
+    $("choices").innerHTML = "";
+    say(age() >= 10 ? "今日も終わった。" : "寝息が聞こえる。今日も終わった。");
+    await wait(reduce ? 600 : 1800);
     document.body.classList.add("dark");
-    await wait(1500);
-    if (yi + 1 < YEARS.length) {
-      yi += 1;
-      openYear();
-    } else {
-      showEnd();
-    }
+    await wait(reduce ? 0 : 1300);
+    ni += 1;
+    if (ni < NIGHTS.length) openYear();
+    else showEnd();
     document.body.classList.remove("dark");
   }
 
   function openYear() {
     $("yAge").textContent = "ハル " + age() + "歳";
-    $("yGrow").textContent = YEARS[yi].grow;
-    showScreen("sYear");
+    $("yNote").textContent = night().note;
+    show("sYear");
   }
 
-  function cell(cls, text) {
-    const d = document.createElement("div");
-    d.className = cls;
-    if (text != null) d.textContent = text;
-    return d;
+  function startNight() {
+    slot = 0;
+    tonight = new Set();
+    $("scene").innerHTML = "";
+    $("pWho").textContent = "ハル " + age() + "歳";
+    renderWork();
+    show("sPlay");
+    nextSlot();
+  }
+
+  function fill(id, rows, empty) {
+    const ul = $(id);
+    ul.innerHTML = "";
+    if (!rows.length) rows = [[empty, ""]];
+    rows.forEach(([l, r]) => {
+      const li = document.createElement("li");
+      li.innerHTML = "<span></span><span></span>";
+      li.children[0].textContent = l;
+      li.children[1].textContent = r;
+      ul.appendChild(li);
+    });
   }
 
   function showEnd() {
-    const g = $("chart");
-    g.innerHTML = "";
-    g.appendChild(cell("h", ""));
-    YEARS.forEach((y) => g.appendChild(cell("h", y.age + "歳")));
-    REQ_ORDER.forEach((k) => {
-      g.appendChild(cell("lab kid", REQ[k].label));
-      YEARS.forEach((y, i) => {
-        const d = cell("dots");
-        rec[k][i].forEach((ok) => { const s = document.createElement("span"); s.className = "dot" + (ok ? "" : " miss"); d.appendChild(s); });
-        g.appendChild(d);
-      });
-    });
-    g.appendChild(cell("lab", "仕事 Lv"));
-    YEARS.forEach((y, i) => g.appendChild(cell("num", String(lvAt[i]))));
-    g.appendChild(cell("lab", "家事"));
-    const maxLoad = Math.max(...choreLoad);
-    YEARS.forEach((y, i) => {
-      const d = cell("load");
-      const b = document.createElement("span");
-      b.style.height = Math.round(28 * choreLoad[i] / maxLoad) + "px";
-      d.appendChild(b);
-      g.appendChild(d);
-    });
-    showScreen("sEnd");
+    fill("eWork", workLog.map((w) => [w, ""]).concat([["仕事に使った夜の時間", work * 30 + "分"]]), "なし");
+    fill("eDone", done.map((d) => [d.label, d.age + "歳"]), "なし");
+    fill("eLater", later.map((l) => [l.req.label, l.age + "歳のとき"]), "なし");
+    show("sEnd");
   }
 
-  let lvAt = [];
-
-  function resetGame() {
-    yi = 0; workLv = 0; workProg = 0; running = false; lvAt = []; choreLoad = [];
-    rec = {};
-    REQ_ORDER.forEach((k) => { rec[k] = YEARS.map(() => []); });
-    showScreen("sTitle");
+  function reset() {
+    ni = 0; work = 0; workLog = []; later = []; done = []; current = null; locked = false;
+    show("sTitle");
   }
 
-  let last = performance.now();
-  function frame(t) {
-    const dt = Math.min(0.1, (t - last) / 1000);
-    last = t;
-    if (running) {
-      update(dt);
-      lvAt[yi] = workLv;
-      render();
-    }
-    requestAnimationFrame(frame);
-  }
-
-  buildRooms();
   $("bStart").addEventListener("click", openYear);
   $("bNight").addEventListener("click", startNight);
-  $("bAgain").addEventListener("click", resetGame);
-  resetGame();
-  requestAnimationFrame(frame);
+  $("bAgain").addEventListener("click", reset);
+  reset();
 })();
 </script>
