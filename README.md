@@ -13,4 +13,4 @@
 
 - [コンセプト](docs/concept.md)
 - [体験設計（探索中）](docs/experience.md)
-- [プロトタイプ：ひと晩](prototype/evening/index.html)（ブラウザで開くだけで遊べる検証用）
+- [プレイ版](prototype/evening/index.html)（ブラウザで開くだけで遊べる）
