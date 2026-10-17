@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* Layout: one column. Play screen = big age, a ticking ledger of "how many times", a short life log, and the life map filling in one square per year. The end screen is a record card. */
+  /* Layout: one column. Play = who/age, choice card, short life log, a ledger of counts with "about N left", and the life map. End = a record card in sections: headline, forecast vs actual, the last days, the mother's side, the map. */
   :root {
     --bg: #edf0ee;
     --card: #f8faf9;
@@ -43,6 +43,7 @@
   }
   .screen[hidden] { display: none !important; }
   .muted { color: var(--muted); }
+  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
   .title { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; letter-spacing: 0.1em; margin: 14vh 0 12px; }
   .btn { font: inherit; font-weight: 700; font-size: 1.02rem; padding: 12px 26px; border: 0; border-radius: 6px; background: var(--brand); color: var(--on-brand); cursor: pointer; }
@@ -57,22 +58,25 @@
   .agebig small { font-size: 1.1rem; font-weight: 700; margin-left: 4px; }
   .year { font-family: var(--font-num); color: var(--muted); font-size: 0.85rem; }
 
-  .ledger { margin-top: 14px; display: grid; gap: 2px; }
-  .ledger .row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
-  .ledger .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .ledger .row.work b { color: var(--teal); }
+  .choice { margin-top: 14px; background: var(--card); border: 1.5px solid var(--brand); border-radius: 8px; padding: 14px; display: grid; gap: 10px; }
+  .choice[hidden] { display: none !important; }
+  .choice .q { font-weight: 700; }
+  .choice .est { font-size: 0.85rem; color: var(--teal); }
+  .choice .est[hidden] { display: none !important; }
+  .opts { display: grid; gap: 8px; }
+  .opt { font: inherit; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; }
+  .opt:hover { border-color: var(--brand); }
 
   .log { margin-top: 14px; min-height: 5em; display: grid; gap: 2px; align-content: start; font-size: 0.9rem; }
   .log p { margin: 0; }
   .log p:not(:last-child) { opacity: 0.55; }
   .log .age { font-family: var(--font-num); color: var(--muted); margin-right: 8px; font-size: 0.8rem; }
 
-  .choice { margin-top: 14px; background: var(--card); border: 1.5px solid var(--brand); border-radius: 8px; padding: 14px; display: grid; gap: 10px; }
-  .choice[hidden] { display: none !important; }
-  .choice .q { font-weight: 700; }
-  .opts { display: grid; gap: 8px; }
-  .opt { font: inherit; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; }
-  .opt:hover { border-color: var(--brand); }
+  .ledger { margin-top: 14px; display: grid; }
+  .ledger .row { display: grid; grid-template-columns: minmax(0, 1fr) auto 6.5em; gap: 10px; padding: 3px 0; border-bottom: 1px dashed var(--line); align-items: baseline; }
+  .ledger .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .ledger .row em { font-style: normal; font-size: 0.78rem; color: var(--teal); text-align: right; font-variant-numeric: tabular-nums; }
+  .ledger .row.work b { color: var(--teal); }
 
   .map { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 16px; max-width: 20rem; }
   .map i { aspect-ratio: 1; background: var(--map0); border-radius: 2px; position: relative; max-width: 100%; }
@@ -84,28 +88,48 @@
   .card .band { background: var(--brand); color: var(--on-brand); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .card .band b { font-family: var(--font-title); font-weight: 800; font-size: 1.6rem; letter-spacing: 0.08em; }
   .card .band span { font-family: var(--font-num); font-size: 0.8rem; opacity: 0.85; }
-  .card .body { padding: 18px; display: grid; gap: 18px; }
+  .card .body { padding: 18px; display: grid; gap: 26px; }
   .card .name { font-family: var(--font-title); font-size: 1.9rem; font-weight: 800; line-height: 1.2; }
   .card .meta { color: var(--muted); }
+  .card h3 { font-size: 0.82rem; color: var(--muted); font-weight: 700; letter-spacing: 0.06em; margin: 0 0 6px; }
   .headline { border-left: 3px solid var(--teal); padding-left: 12px; }
   .headline .big { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; color: var(--teal); line-height: 1.1; }
-  .tally { display: grid; gap: 0; }
-  .tally .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-  .tally .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
-  .tally .row span:last-child { color: var(--muted); font-size: 0.8rem; white-space: nowrap; min-width: 6.5em; text-align: right; }
-  .tally .row.work b { color: var(--teal); }
-  .tally h3 { font-size: 0.8rem; color: var(--muted); font-weight: 500; margin: 0 0 4px; }
+
+  .tbl { display: grid; }
+  .tbl .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .tbl .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .tbl .row span:last-child { color: var(--muted); font-size: 0.8rem; text-align: right; }
+  .tbl .row.work b { color: var(--teal); }
+  .tbl .row.head { border-bottom-color: transparent; padding-bottom: 0; font-size: 0.75rem; color: var(--muted); }
+  .tbl .row.head span { font-size: 0.75rem; }
+  .tbl.fc .row { grid-template-columns: minmax(0, 1fr) 5.5em 5.5em; }
+  .tbl.fc .row b.off { color: var(--brand); }
+
+  .lasts { display: grid; gap: 10px; }
+  .lasts p { margin: 0; }
+  .lasts .l { font-size: 0.8rem; color: var(--muted); }
+  .lasts .t { font-weight: 500; }
+
+  .mom { background: var(--bg); border-radius: 4px; padding: 12px 14px; display: grid; gap: 6px; }
+  .mom .big { font-family: var(--font-title); font-weight: 800; font-size: 1.8rem; color: var(--brand); line-height: 1.1; }
+
   .foot { font-family: var(--font-title); font-weight: 700; font-size: 1.05rem; }
   .again { margin-top: 18px; }
 
-  @media (max-width: 380px) { .tally .row { grid-template-columns: minmax(0, 1fr) auto; } .tally .row span:last-child { grid-column: 1 / -1; text-align: left; } }
+  @media (max-width: 380px) {
+    .tbl .row { grid-template-columns: minmax(0, 1fr) auto; }
+    .tbl .row span:last-child { grid-column: 1 / -1; text-align: left; }
+    .tbl.fc .row { grid-template-columns: minmax(0, 1fr) 4.6em 4.6em; }
+    .tbl.fc .row span:last-child { grid-column: auto; text-align: right; }
+    .ledger .row { grid-template-columns: minmax(0, 1fr) auto 5.6em; }
+  }
 </style>
 
 <div class="wrap">
   <section class="screen" id="sTitle">
     <h1 class="title">あと何回</h1>
     <p>どこかの国の、誰かとして生まれて、一つの人生を数分で生きる。</p>
-    <p class="muted">母とのごはん、子どもとのお風呂、友だちが全員そろう日。人生で何回あって、最後はいつだったのか。</p>
+    <p class="muted">母とのごはん、子どもとのお風呂、友だちが全員そろう日。あと何回あると思っていて、本当は何回だったのか。</p>
     <button type="button" class="btn" id="bStart">生まれる</button>
   </section>
 
@@ -115,12 +139,13 @@
     <div class="year" id="pYear"></div>
     <div class="choice" id="choice" hidden>
       <div class="q" id="cQ"></div>
+      <div class="est" id="cEst" hidden></div>
       <div class="opts" id="cOpts"></div>
     </div>
     <div class="log" id="log" aria-live="polite"></div>
     <div class="ledger" id="ledger"></div>
     <div class="map" id="pMap"></div>
-    <div class="maplabel">1マス＝1年。点は、何かが最後になった年。</div>
+    <div class="maplabel">1マス＝1年</div>
   </section>
 
   <section class="screen" id="sEnd" hidden>
@@ -132,12 +157,15 @@
           <div class="meta" id="eMeta"></div>
         </div>
         <div class="headline"><div class="big" id="eBig"></div><div id="eBigText"></div></div>
-        <div class="tally" id="eTally"></div>
+        <div><h3 id="eFcTitle">35歳のときの予想と、実際</h3><div class="tbl fc" id="eFc"></div></div>
+        <div><h3>一生で、何回だったか</h3><div class="tbl" id="eTally"></div></div>
+        <div><h3>最後の日</h3><div class="lasts" id="eLasts"></div></div>
+        <div class="mom" id="eMom"></div>
         <div>
           <div class="map" id="eMap"></div>
           <div class="maplabel">1マス＝1年。色が濃いほど、家族と過ごした年。点は、何かが最後になった年。</div>
         </div>
-        <div class="foot">どの「最後」も、その日はふつうの日だった。</div>
+        <div class="foot" id="eFoot"></div>
       </div>
     </div>
     <button type="button" class="btn again" id="bAgain">もう一度生まれる</button>
@@ -147,16 +175,16 @@
 <script>
 (function () {
   const COUNTRIES = [
-    { name: "日本", city: "大阪", le: 84, names: ["佐藤 ひなた", "鈴木 みさき", "高橋 あおい", "田中 そうた"] },
-    { name: "トーゴ", city: "ロメ", le: 62, names: ["アベナ・クポド", "コフィ・アグボ", "アクア・メンサ"] },
-    { name: "インド", city: "プネー", le: 70, names: ["プリヤ・シャルマ", "アルジュン・パテル", "アナニャ・レッディ"] },
-    { name: "ブラジル", city: "レシフェ", le: 75, names: ["ルーカス・シウヴァ", "アナ・ソウザ", "ガブリエル・サントス"] },
-    { name: "ナイジェリア", city: "イバダン", le: 54, names: ["チディ・オコンクォ", "アデ・ベロ", "ンゴジ・エゼ"] },
-    { name: "アメリカ", city: "オハイオ", le: 77, names: ["エミリー・ジョンソン", "マイケル・ブラウン", "ソフィア・ガルシア"] },
-    { name: "ドイツ", city: "ライプツィヒ", le: 81, names: ["レオン・ミュラー", "ハンナ・シュミット"] },
-    { name: "フィリピン", city: "セブ", le: 70, names: ["マリア・サントス", "ホセ・レイエス"] },
-    { name: "メキシコ", city: "プエブラ", le: 75, names: ["ディエゴ・エルナンデス", "バレンティナ・ロペス"] },
-    { name: "ベトナム", city: "フエ", le: 74, names: ["グエン・ティ・ラン", "チャン・ヴァン・ミン"] }
+    { name: "日本", city: "大阪", le: 84, names: ["佐藤 ひなた", "鈴木 みさき", "高橋 あおい", "田中 そうた"], given: ["はると", "ゆい", "そうた", "めい", "りく", "さくら", "かいと", "ひかり"] },
+    { name: "トーゴ", city: "ロメ", le: 62, names: ["アベナ・クポド", "コフィ・アグボ", "アクア・メンサ"], given: ["コフィ", "アマ", "クワメ", "エフア", "ヨー", "アクア", "コジョ", "アフィ"] },
+    { name: "インド", city: "プネー", le: 70, names: ["プリヤ・シャルマ", "アルジュン・パテル", "アナニャ・レッディ"], given: ["ラヴィ", "ミーラ", "アミト", "ディヤ", "ヴィクラム", "サラ", "カビール", "ニーナ"] },
+    { name: "ブラジル", city: "レシフェ", le: 75, names: ["ルーカス・シウヴァ", "アナ・ソウザ", "ガブリエル・サントス"], given: ["ペドロ", "ジュリア", "マテウス", "ラリッサ", "ラファエル", "ベアトリス", "ブルーノ", "カミラ"] },
+    { name: "ナイジェリア", city: "イバダン", le: 54, names: ["チディ・オコンクォ", "アデ・ベロ", "ンゴジ・エゼ"], given: ["トゥンデ", "アマカ", "エメカ", "フンケ", "オビ", "ケミ", "ダヨ", "ヌカ"] },
+    { name: "アメリカ", city: "オハイオ", le: 77, names: ["エミリー・ジョンソン", "マイケル・ブラウン", "ソフィア・ガルシア"], given: ["ジェイク", "エミリー", "ノア", "オリビア", "ライアン", "グレース", "イーサン", "クロエ"] },
+    { name: "ドイツ", city: "ライプツィヒ", le: 81, names: ["レオン・ミュラー", "ハンナ・シュミット"], given: ["フェリックス", "レナ", "ヨナス", "ミア", "パウル", "エマ", "ルーカス", "クララ"] },
+    { name: "フィリピン", city: "セブ", le: 70, names: ["マリア・サントス", "ホセ・レイエス"], given: ["ミゲル", "アンジェラ", "カルロ", "ジャスミン", "パオロ", "ビア", "ノエル", "カミーユ"] },
+    { name: "メキシコ", city: "プエブラ", le: 75, names: ["ディエゴ・エルナンデス", "バレンティナ・ロペス"], given: ["サンティアゴ", "ルシア", "マテオ", "カミラ", "エミリアーノ", "レナタ", "ダニエル", "ソフィア"] },
+    { name: "ベトナム", city: "フエ", le: 74, names: ["グエン・ティ・ラン", "チャン・ヴァン・ミン"], given: ["アン", "リン", "ミン", "ハー", "ズン", "トゥイ", "フン", "マイ"] }
   ];
 
   const LABELS = {
@@ -166,6 +194,25 @@
   };
   const ORDER = ["mom", "dad", "sib", "friends", "partner", "dakko", "furo", "te", "kmeal", "trip", "work"];
   const FAMILY = ["mom", "dad", "sib", "partner", "dakko", "furo", "te", "kmeal", "trip"];
+  const LAST_LABELS = {
+    mom: "母との最後のごはん", dad: "父との最後のごはん", sib: "きょうだいと最後に過ごした日", friends: "友だちが全員そろった最後の日",
+    partner: "パートナーとの最後のごはん", dakko: "最後の抱っこ", furo: "最後の、いっしょのお風呂", te: "最後に手をつないだ日",
+    kmeal: "子どもとの最後のごはん", trip: "最後の家族旅行"
+  };
+  const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+  const DAYS = ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"];
+  const SCENES = {
+    mom: ["母がつくった夕飯。テレビがついていた。", "天気の話をした。帰りに果物を持たされた。", "途中で電話が鳴って、話が途切れた。", "母は少し早口だった。駅まで送ってもらった。"],
+    dad: ["ほとんど話さなかった。ニュースを見ていた。", "おかわりを勧められて、断った。", "仕事の話を少しだけした。"],
+    sib: ["駅前で少し立ち話をした。", "昔の話で笑った。", "子どもの話をして、すぐ別れた。"],
+    friends: ["誰かの結婚式のあと。", "終電まで飲んだ。写真は撮らなかった。", "一人だけ途中で帰った。"],
+    partner: ["いつもの夕飯。何を話したかは覚えていない。", "残りものを温めた。", "片方はスマホを見ていた。"],
+    dakko: ["駐車場から家まで。「重いから歩いて」と言いながら。", "車で寝てしまって、部屋まで運んだ。", "急いでいて、すぐ下ろした。"],
+    furo: ["湯船で十まで数えた。", "シャンプーを嫌がった。", "急いでいて、シャワーだけ。"],
+    te: ["横断歩道を渡るとき。", "スーパーの帰り道。", "すぐに離された。"],
+    kmeal: ["いつもの夕飯。", "帰省して、正月の食卓。"],
+    trip: ["近場の温泉。", "海。日焼けして帰った。", "雨で、ほとんど宿にいた。"]
+  };
 
   const $ = (id) => document.getElementById(id);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -175,33 +222,62 @@
   const gauss = () => (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 1.7;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fmtN = (n) => Math.floor(n).toLocaleString("ja-JP");
+  const roundEst = (n) => n >= 1000 ? Math.round(n / 100) * 100 : n >= 100 ? Math.round(n / 10) * 10 : Math.round(n);
 
   let S;
 
   function newLife() {
     const c = pick(COUNTRIES);
+    const given = c.given.slice().sort(() => Math.random() - 0.5);
     const born = RI(1990, 2026);
     const deathAge = Math.round(Math.max(42, Math.min(101, c.le + gauss() * 6 + 4)));
-    const parent = (ageAtBirth) => {
-      const dies = Math.round(Math.max(48, c.le + gauss() * 5 + 2));
-      return { alive: true, at: Math.max(14, dies - ageAtBirth) };
-    };
-    const momAt = RI(20, 36);
+    const momAt = RI(20, 36), dadAt = momAt + RI(0, 6);
+    const parent = (ageAtBirth) => ({ alive: true, at: Math.max(14, Math.round(Math.max(48, c.le + gauss() * 5 + 2)) - ageAtBirth), ageAtBirth });
+    const sibs = Math.random() < 0.25 ? 0 : RI(1, 3);
     return {
-      c, born, name: pick(c.names), deathAge, age: 0,
-      mom: parent(momAt), dad: parent(momAt + RI(0, 6)),
-      sibs: Math.random() < 0.25 ? 0 : RI(1, 3), sibEnd: RI(45, 80), friendsEnd: RI(23, 40),
+      c, born, name: pick(c.names), deathAge, age: 0, given,
+      mom: parent(momAt), dad: parent(dadAt),
+      sibs, sibNames: given.slice(0, sibs), sibEnd: RI(45, 80), friendsEnd: RI(24, 42),
+      partnerName: given[4], kidNames: [given[5], given[6]],
       leaveAt: 99, visits: 0, workStart: 99, workRate: 1, home: 1, awayUntil: -1, retired: false, caring: false,
       married: false, partnerEnd: 0, kids: [], tripEnd: 0,
-      count: Object.fromEntries(ORDER.map((k) => [k, 0])), last: {}, lastKid: {}, momBeforeLeave: 0,
-      lastYears: new Set(), famYear: [], asked: {}
+      count: Object.fromEntries(ORDER.map((k) => [k, 0])), rate: {}, last: {}, lastKid: {}, bonus: {},
+      momBeforeLeave: 0, famYear: [], asked: {}, snap: null, declined: [], mine: 0
     };
   }
 
-  // Choices: each returns a promise of the chosen option index.
-  function ask(q, opts) {
+  // Expected end age (in the player's own years) that the forecast assumes; the real end is drawn separately.
+  function expectedEnd(k) {
+    const le = S.c.le + 2;
+    const kids = S.kids;
+    const lastKidAt = kids.length ? kids[kids.length - 1].at : 0;
+    switch (k) {
+      case "mom": return S.mom.alive ? le - S.mom.ageAtBirth : 0;
+      case "dad": return S.dad.alive ? le - S.dad.ageAtBirth : 0;
+      case "sib": return 75;
+      case "friends": return 40;
+      case "partner": return S.married ? Math.min(le, S.deathAge + 99) : 0;
+      case "dakko": return kids.length ? lastKidAt + 6 : 0;
+      case "furo": return kids.length ? lastKidAt + 9 : 0;
+      case "te": return kids.length ? lastKidAt + 10 : 0;
+      case "kmeal": return kids.length ? lastKidAt + 20 : 0;
+      case "trip": return kids.length ? lastKidAt + 18 : 0;
+      case "work": return S.retired ? 0 : 65;
+    }
+    return 0;
+  }
+  function estimate(k) {
+    const r = S.rate[k] || 0;
+    if (!r) return 0;
+    return Math.max(0, expectedEnd(k) - S.age) * r;
+  }
+
+  function ask(q, opts, estKey) {
     return new Promise((res) => {
       $("cQ").textContent = q;
+      const e = estKey ? estimate(estKey) : 0;
+      $("cEst").hidden = !(e > 0);
+      if (e > 0) $("cEst").textContent = LABELS[estKey] + "　あと約 " + fmtN(roundEst(e)) + "回（このままなら）";
       const box = $("cOpts");
       box.innerHTML = "";
       opts.forEach((o, i) => {
@@ -228,14 +304,18 @@
     while (box.children.length > 4) box.removeChild(box.firstChild);
   }
 
+  const bonus = (k, n) => { S.bonus[k] = (S.bonus[k] || 0) + n; };
+  const kidName = () => S.kids.length ? S.kidNames[S.kids.length - 1] : "";
+  const youngestAge = () => S.kids.length ? S.age - S.kids[S.kids.length - 1].at : -1;
+
   async function events() {
     const a = S.age;
-    if (a === 0) log(S.c.city + "で生まれる。" + (S.sibs ? "きょうだいは" + S.sibs + "人。" : "ひとりっ子。"));
+    if (a === 0) log(S.c.city + "で生まれる。" + (S.sibs ? "きょうだいは" + S.sibNames.join("、") + "。" : "ひとりっ子。"));
     if (a === 6) log("学校に通いはじめる。");
 
-    if (a === 18 && !S.asked.leave) {
-      S.asked.leave = true;
-      const i = await ask("高校を出たあと、どうする？", ["地元に残る", "都会に出る", "遠くの国へ行く"]);
+    // big turns
+    if (a === 18) {
+      const i = await ask("高校を出たあと、どうする？", ["地元に残る", "都会に出る", "遠くの国へ行く"], "mom");
       if (i === 0) { S.leaveAt = 26; S.visits = 40; S.workStart = 18; log("地元で働きはじめる。"); }
       if (i === 1) { S.leaveAt = 18; S.visits = 4; S.workStart = 22; log("都会に出る。"); }
       if (i === 2) { S.leaveAt = 18; S.visits = 0.7; S.workStart = 22; log("遠くの国へ行く。"); }
@@ -243,48 +323,69 @@
     if (a === S.leaveAt && S.leaveAt === 26) log("実家を出て、近くに部屋を借りる。");
     if (a === S.workStart && S.workStart === 22) log("働きはじめる。");
 
-    if (a === 25 && !S.asked.work) {
-      S.asked.work = true;
+    if (a === 25) {
       const i = await ask("仕事は、どれくらいやる？", ["打ち込む。上を目指す", "ほどほどにする"]);
       if (i === 0) { S.workRate = 1.25; S.home = 0.65; } else { S.workRate = 1; S.home = 0.9; }
     }
 
-    if ((a === 28 || a === 34) && !S.married && !S.asked["p" + a] && Math.random() < (a === 28 ? 0.85 : 0.55)) {
-      S.asked["p" + a] = true;
-      const i = await ask("いっしょに暮らしたい人がいる。", ["結婚する", "まだいい"]);
-      if (i === 0) {
-        S.married = true;
-        S.partnerEnd = Math.max(a + 3, Math.round(S.c.le + gauss() * 6 + 3));
-        log("結婚する。");
-      }
+    if ((a === 28 || a === 34) && !S.married && Math.random() < (a === 28 ? 0.85 : 0.55)) {
+      const i = await ask(S.partnerName + "と、いっしょに暮らしたい。", ["結婚する", "まだいい"]);
+      if (i === 0) { S.married = true; S.partnerEnd = Math.max(a + 3, Math.round(S.c.le + gauss() * 6 + 3)); log(S.partnerName + "と結婚する。"); }
     }
 
-    if (S.married && (a === 31 || a === 37) && !S.asked["k" + a] && S.kids.length < 2) {
-      S.asked["k" + a] = true;
+    if (S.married && (a === 31 || a === 37) && S.kids.length < 2) {
       const i = await ask(a === 31 ? "子どもがほしい？" : "もう一人、ほしい？", ["ほしい", "今はいい"]);
       if (i === 0) {
-        S.kids.push({ at: a + 1, dakko: RI(5, 7), furo: RI(7, 10), te: RI(8, 11), leave: RI(18, 23) });
-        if (!S.tripEnd) S.tripEnd = a + 1 + RI(14, 19);
+        S.kids.push({ at: a + 1, dakko: RI(4, 7), furo: RI(6, 10), te: RI(7, 11), leave: RI(18, 23) });
+        if (!S.tripEnd) S.tripEnd = a + 1 + RI(12, 19);
       }
     }
     S.kids.forEach((k, i) => {
-      if (a === k.at) log((i === 0 ? "子どもが生まれる。" : "二人目が生まれる。"));
-      if (a === k.at + k.leave) log((S.kids.length > 1 ? (i === 0 ? "上の子" : "下の子") : "子ども") + "が家を出る。");
+      if (a === k.at) log(S.kidNames[i] + "が生まれる。");
+      if (a === k.at + k.leave) log(S.kidNames[i] + "が家を出る。");
     });
 
-    if (a === 42 && S.workStart < 99 && !S.retired && !S.asked.move) {
-      S.asked.move = true;
-      const i = await ask("遠くへの転勤の話。受ければ昇進する。", ["受ける", "断る"]);
+    if (a === 35) S.snap = Object.fromEntries(ORDER.filter((k) => k !== "work").map((k) => [k, { est: estimate(k), at: S.count[k] }]));
+
+    if (a === 42 && S.workStart < 99 && !S.retired) {
+      const i = await ask("遠くへの転勤の話。受ければ昇進する。", ["受ける", "断る"], S.kids.length ? "kmeal" : "partner");
       if (i === 0) { S.awayUntil = a + 3; S.workRate += 0.2; log("単身赴任がはじまる。"); }
     }
 
+    // small, recurring asks
+    const away = a >= S.leaveAt && !S.caring;
+    if (away && S.mom.alive && a >= 20 && (a - S.leaveAt) % 3 === 1) {
+      const i = await ask("母から電話。「今度の休み、帰ってくる？」", ["帰る", "今回はやめておく"], "mom");
+      if (i === 0) { bonus("mom", 6); if (S.dad.alive) bonus("dad", 6); if (S.sibs) bonus("sib", 2); }
+      else S.declined.push("母からの「帰ってくる？」");
+    }
+    if ([22, 27, 33, 39].includes(a) && a < S.friendsEnd) {
+      const i = await ask("高校の友だちから。「みんなで集まるけど、来る？」", ["行く", "今回はパス"], "friends");
+      if (i === 0) bonus("friends", 1);
+      else { S.friendsEnd = Math.max(a + 1, S.friendsEnd - 3); S.declined.push("友だちの集まり"); }
+    }
+    if (S.sibs && [30, 45].includes(a) && a < S.sibEnd) {
+      const i = await ask(S.sibNames[0] + "から。「年末、みんなで集まろうよ」", ["行く", "忙しいから、また今度"], "sib");
+      if (i === 0) bonus("sib", 3); else { S.sibEnd = Math.max(a + 1, S.sibEnd - 6); S.declined.push(S.sibNames[0] + "の年末の誘い"); }
+    }
+    const ya = youngestAge();
+    if (S.kids.length && ya >= 3 && ya <= 9 && ya % 3 === 0 && S.workStart < 99 && !S.retired) {
+      const i = await ask(kidName() + "「こんどの日曜、公園いこう」その日は、休日出勤を頼まれている。", ["公園へ行く", "仕事に行く"], ya < 8 ? "te" : "kmeal");
+      if (i === 0) { bonus("te", 2); bonus("kmeal", 2); } else { bonus("work", 1); S.declined.push(kidName() + "の「公園いこう」"); }
+    }
+    if (S.married && [38, 52].includes(a)) {
+      const i = await ask(S.partnerName + "「たまには二人で出かけない？」", ["出かける", "また今度"], "partner");
+      if (i === 0) bonus("partner", 2); else S.declined.push(S.partnerName + "の「二人で出かけない？」");
+    }
+
+    // parents
     for (const [key, who] of [["mom", "母"], ["dad", "父"]]) {
       const p = S[key];
       if (p.alive && !S.asked["care" + key] && a === p.at - 2 && a >= 30) {
         S.asked["care" + key] = true;
-        const i = await ask(who + "が体調を崩したと連絡があった。", ["実家の近くに戻る", "帰る回数を増やす", "今のままにする"]);
-        if (i === 0) { S.caring = true; S.visits = Math.max(S.visits, 120); log("実家の近くに戻る。"); }
-        if (i === 1) { S.visits = Math.max(S.visits * 3, 6); }
+        const i = await ask(who + "が体調を崩したと連絡があった。", ["実家の近くに戻る", "帰る回数を増やす", "今のままにする"], key);
+        if (i === 0) { S.caring = true; log("実家の近くに戻る。"); }
+        if (i === 1) S.visits = Math.max(S.visits * 3, 6);
       }
       if (p.alive && a === p.at) {
         p.alive = false;
@@ -293,10 +394,9 @@
       }
     }
 
-    if (S.married && a === S.partnerEnd) { S.married = false; S.partnerEnd = -1; log("パートナーが亡くなる。"); }
+    if (S.married && a === S.partnerEnd) { S.married = false; S.partnerEnd = -1; log(S.partnerName + "が亡くなる。"); }
 
-    if (a === 65 && S.workStart < 99 && !S.retired && !S.asked.retire) {
-      S.asked.retire = true;
+    if (a === 65 && S.workStart < 99 && !S.retired) {
       const i = await ask("65歳。仕事はどうする？", ["まだ続ける", "辞める"]);
       if (i === 1) { S.retired = true; S.home = 1; log("仕事を辞める。"); }
     }
@@ -306,7 +406,7 @@
   function tick() {
     const a = S.age;
     const inc = {};
-    const atHome = a < S.leaveAt && a < 18 || (a < S.leaveAt);
+    const atHome = a < S.leaveAt;
     const home = a < S.awayUntil ? 0.25 : S.home;
     const visits = S.caring ? 120 : S.visits;
 
@@ -315,9 +415,9 @@
       inc[key] = atHome ? (a < 18 ? 330 : 250) : visits * 2;
     }
     if (S.sibs && a >= 2 && a < S.sibEnd) inc.sib = a < 12 ? 300 : atHome ? 120 : Math.min(visits, 3) * S.sibs;
-    if (a >= 6 && a < 18) inc.friends = 40;
-    else if (a >= 18 && a < S.friendsEnd) inc.friends = Math.max(1, Math.round(4 - (a - 18) / 4));
-    if (S.married && a < S.deathAge) inc.partner = 300 * home;
+    if (a >= 6 && a < 18) inc.friends = 12;
+    else if (a >= 18 && a < S.friendsEnd) inc.friends = a < 23 ? 3 : 1;
+    if (S.married) inc.partner = 300 * home;
     S.kids.forEach((k) => {
       const ka = a - k.at;
       if (ka < 0) return;
@@ -329,20 +429,21 @@
     if (S.kids.length && a >= S.kids[S.kids.length - 1].at + 2 && a < S.tripEnd) inc.trip = 1;
     if (a >= S.workStart && !S.retired) inc.work = 230 * S.workRate;
 
+    // bonuses only count while the relationship still runs
+    for (const k of Object.keys(S.bonus)) { if (inc[k] > 0) inc[k] += S.bonus[k]; }
+    S.bonus = {};
+
     let fam = 0;
+    S.rate = {};
     for (const k of Object.keys(inc)) {
       if (!(inc[k] > 0)) continue;
       S.count[k] += inc[k];
+      S.rate[k] = inc[k];
       if (k === "mom" && a < S.leaveAt) S.momBeforeLeave += inc[k];
       S.last[k] = a;
       if (FAMILY.includes(k)) fam += inc[k];
     }
     S.famYear[a] = fam;
-  }
-
-  function markLasts() {
-    // A year gets a dot when some count had its final occurrence that year. Only known in hindsight.
-    S.lastYears = new Set(ORDER.filter((k) => k !== "work" && S.last[k] != null && S.last[k] < S.deathAge).map((k) => S.last[k]));
   }
 
   function renderLedger() {
@@ -352,23 +453,30 @@
       if (!(S.count[k] >= 1)) return;
       const row = document.createElement("div");
       row.className = "row" + (k === "work" ? " work" : "");
-      row.innerHTML = "<span></span><b></b>";
+      row.innerHTML = "<span></span><b></b><em></em>";
       row.children[0].textContent = LABELS[k];
       row.children[1].textContent = fmtN(S.count[k]) + "回";
+      const e = estimate(k);
+      row.children[2].textContent = k === "work" ? "" : e > 0 ? "あと約" + fmtN(roundEst(e)) : "";
       box.appendChild(row);
     });
+  }
+
+  function lastYears() {
+    return new Set(ORDER.filter((k) => k !== "work" && S.last[k] != null && S.last[k] < S.deathAge).map((k) => S.last[k]));
   }
 
   function renderMap(el, upto, final) {
     el.innerHTML = "";
     const total = Math.ceil((S.deathAge + 1) / 10) * 10;
     const max = Math.max(1, ...S.famYear.filter((x) => x != null));
+    const lasts = final ? lastYears() : new Set();
     for (let y = 0; y < total; y++) {
       const i = document.createElement("i");
       if (y <= upto && y <= S.deathAge) {
         const t = (S.famYear[y] || 0) / max;
         i.style.background = "color-mix(in srgb, var(--teal) " + Math.round(12 + t * 80) + "%, var(--map0))";
-        if (final && S.lastYears.has(y)) i.className = "last";
+        if (lasts.has(y)) i.className = "last";
       } else if (final) {
         i.className = "dead";
       }
@@ -376,11 +484,14 @@
     }
   }
 
+  function show(id) { ["sTitle", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+
   async function live() {
     S = newLife();
     $("pName").textContent = S.name;
     $("pPlace").textContent = S.c.name + "・" + S.c.city;
     $("log").innerHTML = "";
+    $("ledger").innerHTML = "";
     $("choice").hidden = true;
     show("sPlay");
     for (S.age = 0; S.age <= S.deathAge; S.age++) {
@@ -390,50 +501,103 @@
       tick();
       renderLedger();
       renderMap($("pMap"), S.age, false);
-      const ms = reduce ? 60 : S.age < 18 ? 260 : 360;
-      await wait(ms);
+      await wait(reduce ? 60 : S.age < 18 ? 240 : 340);
     }
     log("生涯を閉じる。");
     await wait(1600);
     finish();
   }
 
+  function rows(el, list, cls) {
+    el.innerHTML = "";
+    list.forEach((cells) => {
+      const row = document.createElement("div");
+      row.className = "row" + (cells.cls ? " " + cells.cls : "");
+      cells.v.forEach((v, i) => {
+        const e = document.createElement(i === 0 || i === cells.v.length - 1 && !cells.numLast ? "span" : "b");
+        e.textContent = v;
+        if (cells.off && i === 2) e.className = "off";
+        row.appendChild(e);
+      });
+      el.appendChild(row);
+    });
+  }
+
   function finish() {
-    markLasts();
-    const country = S.c;
-    $("eId").textContent = "LIFE-" + (S.born) + "-" + String(S.deathAge).padStart(3, "0");
+    $("eId").textContent = "LIFE-" + S.born + "-" + String(S.deathAge).padStart(3, "0");
     $("eName").textContent = S.name;
-    $("eMeta").textContent = country.name + "・" + country.city + "　" + S.born + "–" + (S.born + S.deathAge) + "　" + S.deathAge + "歳で生涯を閉じる";
+    $("eMeta").textContent = S.c.name + "・" + S.c.city + "　" + S.born + "–" + (S.born + S.deathAge) + "　" + S.deathAge + "歳で生涯を閉じる";
 
     const momTotal = S.count.mom;
     if (momTotal > 0 && S.leaveAt < 99 && S.momBeforeLeave < momTotal) {
-      const pct = Math.round(100 * S.momBeforeLeave / momTotal);
-      $("eBig").textContent = pct + "%";
+      $("eBig").textContent = Math.round(100 * S.momBeforeLeave / momTotal) + "%";
       $("eBigText").textContent = "母と食べたごはんのうち、家を出る" + S.leaveAt + "歳までに食べ終わっていた割合。";
     } else {
       $("eBig").textContent = fmtN(momTotal) + "回";
       $("eBigText").textContent = "母と食べたごはんの、一生ぶん。";
     }
 
-    const t = $("eTally");
-    t.innerHTML = "<h3>一生で、何回だったか</h3>";
-    ORDER.forEach((k) => {
-      if (!(S.count[k] >= 1)) return;
-      const row = document.createElement("div");
-      row.className = "row" + (k === "work" ? " work" : "");
-      row.innerHTML = "<span></span><b></b><span></span>";
-      row.children[0].textContent = LABELS[k];
-      row.children[1].textContent = fmtN(S.count[k]) + "回";
+    // forecast vs actual
+    const fc = [];
+    if (S.snap) {
+      ORDER.forEach((k) => {
+        const s = S.snap[k];
+        if (!s || !(s.est > 0)) return;
+        const actual = S.count[k] - s.at;
+        const off = actual < s.est * 0.7;
+        fc.push({ v: [LABELS[k], "約" + fmtN(roundEst(s.est)), fmtN(actual)], numLast: true, off });
+      });
+    }
+    $("eFcTitle").parentElement.hidden = !fc.length;
+    if (fc.length) rows($("eFc"), [{ v: ["", "予想", "実際"], cls: "head", numLast: true }].concat(fc));
+
+    rows($("eTally"), ORDER.filter((k) => S.count[k] >= 1).map((k) => {
       const last = S.last[k];
       const kid = S.lastKid[k] != null ? "（子どもが" + S.lastKid[k] + "歳）" : "";
-      row.children[2].textContent = k === "work" ? "積み上がった" : last >= S.deathAge ? "最後まで" : "最後は " + last + "歳" + kid;
-      t.appendChild(row);
+      return { v: [LABELS[k], fmtN(S.count[k]) + "回", k === "work" ? "積み上がった" : last >= S.deathAge ? "最後まで" : "最後は " + last + "歳" + kid], cls: k === "work" ? "work" : "" };
+    }));
+
+    const ls = $("eLasts");
+    ls.innerHTML = "";
+    ORDER.filter((k) => k !== "work" && S.count[k] >= 1 && S.last[k] < S.deathAge && SCENES[k]).forEach((k) => {
+      const d = document.createElement("div");
+      const l = document.createElement("p");
+      l.className = "l";
+      l.textContent = LAST_LABELS[k];
+      const t = document.createElement("p");
+      t.className = "t";
+      t.textContent = S.last[k] + "歳、" + pick(MONTHS) + "の" + pick(DAYS) + "。" + pick(SCENES[k]);
+      d.appendChild(l);
+      d.appendChild(t);
+      ls.appendChild(d);
     });
+    if (!ls.children.length) ls.innerHTML = "<p class=\"muted\">どれも、最後まで続いた。</p>";
+
+    // the mother's side
+    const mom = $("eMom");
+    const momLife = S.mom.ageAtBirth + Math.min(S.mom.at, S.deathAge);
+    const momMeals = Math.max(1, momLife * 365 * 2);
+    const share = Math.round(100 * momTotal / momMeals);
+    mom.innerHTML = "";
+    const h = document.createElement("h3");
+    h.textContent = "母から見ると";
+    const big = document.createElement("div");
+    big.className = "big";
+    big.textContent = share + "%";
+    const txt = document.createElement("div");
+    txt.textContent = "母が一生で食べたごはんのうち、あなたといっしょだった割合。母にとって、最後にあなたとごはんを食べたのは、あなたが" + (S.last.mom != null ? S.last.mom : 0) + "歳のとき。";
+    mom.appendChild(h); mom.appendChild(big); mom.appendChild(txt);
+    if (S.declined.length) {
+      const dl = document.createElement("div");
+      dl.className = "muted";
+      dl.textContent = "断ったもの：" + S.declined.length + "回（" + [...new Set(S.declined)].slice(0, 3).join("、") + (new Set(S.declined).size > 3 ? "など" : "") + "）";
+      mom.appendChild(dl);
+    }
+
     renderMap($("eMap"), S.deathAge, true);
+    $("eFoot").textContent = "どの「最後」も、その日はふつうの日だった。";
     show("sEnd");
   }
-
-  function show(id) { ["sTitle", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
 
   $("bStart").addEventListener("click", live);
   $("bAgain").addEventListener("click", live);
