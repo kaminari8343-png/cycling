@@ -2,445 +2,440 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* Layout: a single column; the evening as a strip of half-hour blocks, the scene, the choices, then the "later" list like a sticky note at the bottom. */
+  /* Layout: one column. Play screen = big age, a ticking ledger of "how many times", a short life log, and the life map filling in one square per year. The end screen is a record card. */
   :root {
-    --bg: #eef1ef;
+    --bg: #edf0ee;
     --card: #f8faf9;
-    --fg: #22302c;
-    --muted: #6b7a75;
-    --line: #c9d2ce;
-    --kid: #3b5794;
-    --accent: #2f6a5d;
-    --on-accent: #f4f7f6;
-    --note: #f3ecd2;
-    --note-fg: #5b4a1c;
-    --night: rgba(18, 28, 40, 0.55);
+    --fg: #1f2b28;
+    --muted: #6a7873;
+    --line: #cad3cf;
+    --brand: #8a1c3c;
+    --on-brand: #fbf3f5;
+    --teal: #1f6e64;
+    --map0: #dfe6e3;
+    --dot: #1f2b28;
     --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-    --font-kid: "Klee One", "Hiragino Maru Gothic ProN", "Zen Kaku Gothic New", sans-serif;
     --font-title: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
     --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #151b1a; --card: #1d2624; --fg: #dce4e1; --muted: #8d9c97; --line: #2f3b38;
-      --kid: #a3b8ea; --accent: #6fb2a2; --on-accent: #0f1715;
-      --note: #33301f; --note-fg: #e3d6a6; --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
+      --bg: #141a19; --card: #1c2523; --fg: #dde5e2; --muted: #8d9b96; --line: #2e3a37;
+      --brand: #c4486d; --on-brand: #1a0d12; --teal: #5fb3a6; --map0: #24302d; --dot: #dde5e2;
+      color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #151b1a; --card: #1d2624; --fg: #dce4e1; --muted: #8d9c97; --line: #2f3b38;
-    --kid: #a3b8ea; --accent: #6fb2a2; --on-accent: #0f1715;
-    --note: #33301f; --note-fg: #e3d6a6; --night: rgba(0, 0, 0, 0.6); color-scheme: dark;
+    --bg: #141a19; --card: #1c2523; --fg: #dde5e2; --muted: #8d9b96; --line: #2e3a37;
+    --brand: #c4486d; --on-brand: #1a0d12; --teal: #5fb3a6; --map0: #24302d; --dot: #dde5e2;
+    color-scheme: dark;
   }
 
   html, body { min-height: 100%; }
-  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.65; }
-
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
   .wrap {
-    max-width: 30rem;
-    margin: 0 auto;
+    max-width: 32rem; margin: 0 auto;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 18px 32px;
+    padding-block: 18px 40px;
   }
   .screen[hidden] { display: none !important; }
   .muted { color: var(--muted); }
 
-  .title { font-family: var(--font-title); font-size: 2.4rem; letter-spacing: 0.12em; margin: 16vh 0 10px; }
-  .btn {
-    font: inherit; font-weight: 700; font-size: 1.02rem;
-    padding: 12px 26px; border: 0; border-radius: 6px;
-    background: var(--accent); color: var(--on-accent); cursor: pointer;
-  }
-  .btn:focus-visible, .choice:focus-visible, .later button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-  #sTitle .btn { margin-top: 24px; }
+  .title { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; letter-spacing: 0.1em; margin: 14vh 0 12px; }
+  .btn { font: inherit; font-weight: 700; font-size: 1.02rem; padding: 12px 26px; border: 0; border-radius: 6px; background: var(--brand); color: var(--on-brand); cursor: pointer; }
+  .btn:focus-visible, .opt:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  #sTitle p { max-width: 26rem; }
+  #sTitle .btn { margin-top: 22px; }
 
-  .year { margin-top: 22vh; display: grid; gap: 10px; }
-  .year .age { font-family: var(--font-title); font-size: 2.6rem; letter-spacing: 0.08em; line-height: 1.2; }
-  .year .btn { justify-self: start; margin-top: 18px; }
+  .who { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .who b { font-family: var(--font-title); font-size: 1.15rem; }
+  .who span { color: var(--muted); font-size: 0.85rem; }
+  .agebig { font-family: var(--font-title); font-weight: 800; font-size: 3.4rem; line-height: 1; margin: 10px 0 2px; font-variant-numeric: tabular-nums; }
+  .agebig small { font-size: 1.1rem; font-weight: 700; margin-left: 4px; }
+  .year { font-family: var(--font-num); color: var(--muted); font-size: 0.85rem; }
 
-  .status { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .status .who { font-family: var(--font-title); font-size: 1.15rem; letter-spacing: 0.06em; }
-  .status .clock { font-family: var(--font-num); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .ledger { margin-top: 14px; display: grid; gap: 2px; }
+  .ledger .row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .ledger .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ledger .row.work b { color: var(--teal); }
 
-  .strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 8px 0 4px; }
-  .blk { height: 30px; border-radius: 3px; background: var(--card); border: 1px solid var(--line); font-size: 0.68rem; color: var(--muted); display: grid; place-items: center; overflow: hidden; white-space: nowrap; }
-  .blk.fixed { background: var(--line); color: var(--fg); }
-  .blk.now { border: 2px solid var(--accent); }
-  .blk.past { opacity: 0.4; }
-  .times { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); font-size: 0.68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .log { margin-top: 14px; min-height: 5em; display: grid; gap: 2px; align-content: start; font-size: 0.9rem; }
+  .log p { margin: 0; }
+  .log p:not(:last-child) { opacity: 0.55; }
+  .log .age { font-family: var(--font-num); color: var(--muted); margin-right: 8px; font-size: 0.8rem; }
 
-  .scene { margin: 18px 0 14px; min-height: 6.5em; display: grid; gap: 4px; align-content: start; }
-  .scene p { margin: 0; }
-  .scene .k { font-family: var(--font-kid); color: var(--kid); font-size: 1.1rem; }
-  .scene .old { opacity: 0.45; }
+  .choice { margin-top: 14px; background: var(--card); border: 1.5px solid var(--brand); border-radius: 8px; padding: 14px; display: grid; gap: 10px; }
+  .choice[hidden] { display: none !important; }
+  .choice .q { font-weight: 700; }
+  .opts { display: grid; gap: 8px; }
+  .opt { font: inherit; text-align: left; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; }
+  .opt:hover { border-color: var(--brand); }
 
-  .choices { display: grid; gap: 8px; }
-  .choice {
-    font: inherit; text-align: left; cursor: pointer; color: var(--fg);
-    background: var(--card); border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 14px;
-    display: grid; gap: 0;
-  }
-  .choice small { color: var(--muted); font-size: 0.8rem; }
-  .choice.kid { border-color: var(--kid); }
-  .choice.kid b { color: var(--kid); }
-  .choice:disabled { opacity: 0.5; cursor: default; }
+  .map { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 16px; max-width: 20rem; }
+  .map i { aspect-ratio: 1; background: var(--map0); border-radius: 2px; position: relative; max-width: 100%; }
+  .map i.last::after { content: ""; position: absolute; inset: 35%; border-radius: 50%; background: var(--dot); }
+  .map i.dead { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+  .maplabel { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
 
-  .later { margin-top: 22px; background: var(--note); color: var(--note-fg); border-radius: 4px; padding: 10px 14px 12px; }
-  .later h2 { font-size: 0.85rem; margin: 0 0 6px; letter-spacing: 0.08em; }
-  .later ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-  .later button {
-    font: inherit; color: inherit; background: transparent; border: 0; padding: 2px 0; cursor: pointer;
-    text-align: left; width: 100%; display: flex; justify-content: space-between; gap: 12px;
-  }
-  .later button span:last-child { opacity: 0.7; font-size: 0.8rem; white-space: nowrap; }
-  .later button:disabled { cursor: default; }
-  .later .empty { opacity: 0.7; font-size: 0.85rem; }
-  .later .hint { opacity: 0.7; font-size: 0.75rem; margin-top: 6px; }
-  .worknote { margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
+  .card { background: var(--card); border-radius: 4px; overflow: hidden; box-shadow: 0 1px 0 var(--line); }
+  .card .band { background: var(--brand); color: var(--on-brand); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .card .band b { font-family: var(--font-title); font-weight: 800; font-size: 1.6rem; letter-spacing: 0.08em; }
+  .card .band span { font-family: var(--font-num); font-size: 0.8rem; opacity: 0.85; }
+  .card .body { padding: 18px; display: grid; gap: 18px; }
+  .card .name { font-family: var(--font-title); font-size: 1.9rem; font-weight: 800; line-height: 1.2; }
+  .card .meta { color: var(--muted); }
+  .headline { border-left: 3px solid var(--teal); padding-left: 12px; }
+  .headline .big { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; color: var(--teal); line-height: 1.1; }
+  .tally { display: grid; gap: 0; }
+  .tally .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .tally .row b { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+  .tally .row span:last-child { color: var(--muted); font-size: 0.8rem; white-space: nowrap; min-width: 6.5em; text-align: right; }
+  .tally .row.work b { color: var(--teal); }
+  .tally h3 { font-size: 0.8rem; color: var(--muted); font-weight: 500; margin: 0 0 4px; }
+  .foot { font-family: var(--font-title); font-weight: 700; font-size: 1.05rem; }
+  .again { margin-top: 18px; }
 
-  .dim { position: fixed; inset: 0; background: var(--night); opacity: 0; pointer-events: none; transition: opacity 1.2s ease; z-index: 30; }
-  body.dark .dim { opacity: 1; }
-
-  .end h1 { font-family: var(--font-title); font-size: 2rem; letter-spacing: 0.12em; margin: 20px 0 18px; }
-  .end section { margin-bottom: 26px; }
-  .end h2 { font-size: 0.95rem; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
-  .end ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-  .end li { display: flex; justify-content: space-between; gap: 12px; }
-  .end li span:last-child { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
-  .end .note { background: var(--note); color: var(--note-fg); border-radius: 4px; padding: 10px 14px; }
-  .end .note h2 { border-color: transparent; }
-  .end .note li span:last-child { color: inherit; opacity: 0.7; }
-
-  .fade-in { animation: fade 0.5s ease both; }
-  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } .dim { transition: none; } }
+  @media (max-width: 380px) { .tally .row { grid-template-columns: minmax(0, 1fr) auto; } .tally .row span:last-child { grid-column: 1 / -1; text-align: left; } }
 </style>
-
-<div class="dim" aria-hidden="true"></div>
 
 <div class="wrap">
   <section class="screen" id="sTitle">
     <h1 class="title">あと何回</h1>
-    <p>ハルが4歳から12歳になるまでの、ある夜たち。</p>
-    <p class="muted">夜は30分ずつ進みます。空いている時間を、何に使うか選んでください。</p>
-    <button type="button" class="btn" id="bStart">はじめる</button>
-  </section>
-
-  <section class="screen" id="sYear" hidden>
-    <div class="year">
-      <div class="age" id="yAge"></div>
-      <div class="muted" id="yNote"></div>
-      <button type="button" class="btn" id="bNight">夜をはじめる</button>
-    </div>
+    <p>どこかの国の、誰かとして生まれて、一つの人生を数分で生きる。</p>
+    <p class="muted">母とのごはん、子どもとのお風呂、友だちが全員そろう日。人生で何回あって、最後はいつだったのか。</p>
+    <button type="button" class="btn" id="bStart">生まれる</button>
   </section>
 
   <section class="screen" id="sPlay" hidden>
-    <div class="status">
-      <span class="who" id="pWho"></span>
-      <span class="clock" id="pClock">18:00</span>
+    <div class="who"><b id="pName"></b><span id="pPlace"></span></div>
+    <div class="agebig" id="pAge">0<small>歳</small></div>
+    <div class="year" id="pYear"></div>
+    <div class="choice" id="choice" hidden>
+      <div class="q" id="cQ"></div>
+      <div class="opts" id="cOpts"></div>
     </div>
-    <div class="strip" id="strip"></div>
-    <div class="times"><span>18:00</span><span>18:30</span><span>19:00</span><span>19:30</span><span>20:00</span><span>20:30</span></div>
-    <div class="scene" id="scene" aria-live="polite"></div>
-    <div class="choices" id="choices"></div>
-    <div class="later" id="later">
-      <h2>あとでね、と言ったこと</h2>
-      <ul id="laterList"></ul>
-      <div class="hint" id="laterHint" hidden>押すと、この時間をそれに使います。</div>
-    </div>
-    <div class="worknote" id="workNote"></div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="ledger" id="ledger"></div>
+    <div class="map" id="pMap"></div>
+    <div class="maplabel">1マス＝1年。点は、何かが最後になった年。</div>
   </section>
 
-  <section class="screen end" id="sEnd" hidden>
-    <h1>あと何回</h1>
-    <section><h2>仕事で積み上がったこと</h2><ul id="eWork"></ul></section>
-    <section><h2>ハルといっしょにやったこと</h2><ul id="eDone"></ul></section>
-    <section class="note"><h2>あとでね、と言ったこと</h2><ul id="eLater"></ul></section>
-    <button type="button" class="btn" id="bAgain">もう一度</button>
+  <section class="screen" id="sEnd" hidden>
+    <div class="card">
+      <div class="band"><b>あと何回</b><span id="eId"></span></div>
+      <div class="body">
+        <div>
+          <div class="name" id="eName"></div>
+          <div class="meta" id="eMeta"></div>
+        </div>
+        <div class="headline"><div class="big" id="eBig"></div><div id="eBigText"></div></div>
+        <div class="tally" id="eTally"></div>
+        <div>
+          <div class="map" id="eMap"></div>
+          <div class="maplabel">1マス＝1年。色が濃いほど、家族と過ごした年。点は、何かが最後になった年。</div>
+        </div>
+        <div class="foot">どの「最後」も、その日はふつうの日だった。</div>
+      </div>
+    </div>
+    <button type="button" class="btn again" id="bAgain">もう一度生まれる</button>
   </section>
 </div>
 
 <script>
 (function () {
-  // Each night has six half-hour blocks (18:00-21:00). Fixed blocks are housework that happens on its own.
-  const NIGHTS = [
-    { age: 4, note: "", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
-    { age: 5, note: "補助輪なしで自転車に乗れるようになった。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
-    { age: 6, note: "ひらがなが全部書けるようになった。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
-    { age: 7, note: "小学校に通いはじめて一年。", fixed: { 0: "夕飯", 2: "お風呂", 5: "寝かしつけ" } },
-    { age: 8, note: "一人でお風呂に入るようになった。", fixed: { 0: "夕飯", 5: "おやすみ" } },
-    { age: 10, note: "一人で寝るようになった。", fixed: { 0: "夕飯" } },
-    { age: 12, note: "中学の制服を買った。", fixed: { 0: "夕飯" }, roomFrom: 4 }
+  const COUNTRIES = [
+    { name: "日本", city: "大阪", le: 84, names: ["佐藤 ひなた", "鈴木 みさき", "高橋 あおい", "田中 そうた"] },
+    { name: "トーゴ", city: "ロメ", le: 62, names: ["アベナ・クポド", "コフィ・アグボ", "アクア・メンサ"] },
+    { name: "インド", city: "プネー", le: 70, names: ["プリヤ・シャルマ", "アルジュン・パテル", "アナニャ・レッディ"] },
+    { name: "ブラジル", city: "レシフェ", le: 75, names: ["ルーカス・シウヴァ", "アナ・ソウザ", "ガブリエル・サントス"] },
+    { name: "ナイジェリア", city: "イバダン", le: 54, names: ["チディ・オコンクォ", "アデ・ベロ", "ンゴジ・エゼ"] },
+    { name: "アメリカ", city: "オハイオ", le: 77, names: ["エミリー・ジョンソン", "マイケル・ブラウン", "ソフィア・ガルシア"] },
+    { name: "ドイツ", city: "ライプツィヒ", le: 81, names: ["レオン・ミュラー", "ハンナ・シュミット"] },
+    { name: "フィリピン", city: "セブ", le: 70, names: ["マリア・サントス", "ホセ・レイエス"] },
+    { name: "メキシコ", city: "プエブラ", le: 75, names: ["ディエゴ・エルナンデス", "バレンティナ・ロペス"] },
+    { name: "ベトナム", city: "フエ", le: 74, names: ["グエン・ティ・ラン", "チャン・ヴァン・ミン"] }
   ];
 
-  // ask: ages the child asks it. until: the last age it can still happen.
-  const REQS = [
-    { id: "dakko", ask: [4, 5], until: 5, say: "だっこ", again: "ねえ、だっこは？", act: "抱っこする", label: "だっこ",
-      ok: "抱きあげる。重い。しばらく下ろさない。", late: "「え、いいよ。重いでしょ」" },
-    { id: "ehon", ask: [4, 6], until: 6, say: "この絵本よんで", again: "絵本、まだ？", act: "絵本を読む", label: "絵本を読む",
-      ok: "読む。もう一回と言われて、もう一回。", late: "「それ、もう読まないよ」" },
-    { id: "inu", ask: [4, 5], until: 5, say: "見て、犬かいた", again: "犬の絵、見た？", act: "絵を見る", label: "犬の絵を見る",
-      ok: "茶色の犬。しっぽがない。「しっぽはあしたかく」", late: "「犬？ どの絵？」" },
-    { id: "neru", ask: [4, 7], until: 7, say: "きょういっしょにねて", again: "ねえ、いっしょにねてくれる？", act: "いっしょに寝る", label: "いっしょに寝る",
-      ok: "狭いベッドで、背中をくっつけて寝る。", late: "「ひとりで寝れるってば」" },
-    { id: "sakaagari", ask: [6, 7], until: 7, say: "さかあがり、見て。こんど公園で", again: "公園、いつ行く？", act: "公園に行く", label: "公園でさかあがりを見る",
-      ok: "暗くなりかけの公園。三回目で回った。", late: "「さかあがり？ もう普通にできるよ」" },
-    { id: "game", ask: [8, 10], until: 10, say: "このゲーム、いっしょにやろ", again: "ゲーム、やらないの？", act: "ゲームをする", label: "いっしょにゲーム",
-      ok: "負ける。もう一回と言って、また負ける。", late: "「あー、それもうやってない」" },
-    { id: "tsuri", ask: [8, 10], until: 12, say: "こんど釣りに行きたい", again: "釣りの話、覚えてる？", act: "釣りの計画を立てる", label: "釣りに行く",
-      ok: "次の日曜、釣りに行く約束をした。地図を二人で見る。", late: "" },
-    { id: "hanashi", ask: [10, 12], until: 12, say: "ちょっと話があるんだけど", again: "……やっぱりいい", act: "話を聞く", label: "話を聞く",
-      ok: "部屋の床に座って、友だちのことを聞く。", late: "" }
-  ];
-
-  const WORK = [
-    ["資料をつくる", "資料をつくった。"],
-    ["メールを返す", "メールを返した。"],
-    ["企画書を直す", "企画書を直した。"],
-    ["見積もりを出す", "見積もりを出した。"],
-    ["来週の準備をする", "来週の準備をした。"]
-  ];
-  const WORK_MILESTONES = [
-    [2, "見積もりを一人で出せるようになった"],
-    [4, "後輩がついた"],
-    [6, "小さな案件を任された"],
-    [9, "チームを持った"],
-    [12, "大きな案件がまとまった"],
-    [15, "名前で指名されるようになった"],
-    [18, "新しい部署を任された"]
-  ];
-  const REST = "スマホを見る。十五分のつもりが、三十分。";
+  const LABELS = {
+    mom: "母とごはん", dad: "父とごはん", sib: "きょうだいと過ごす", friends: "友だち全員がそろう",
+    partner: "パートナーとごはん", dakko: "子どもを抱っこ", furo: "子どもとお風呂", te: "子どもと手をつなぐ",
+    kmeal: "子どもとごはん", trip: "家族全員で旅行", work: "仕事をした日"
+  };
+  const ORDER = ["mom", "dad", "sib", "friends", "partner", "dakko", "furo", "te", "kmeal", "trip", "work"];
+  const FAMILY = ["mom", "dad", "sib", "partner", "dakko", "furo", "te", "kmeal", "trip"];
 
   const $ = (id) => document.getElementById(id);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const R = (a, b) => a + Math.random() * (b - a);
+  const RI = (a, b) => Math.floor(R(a, b + 1));
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
-  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const gauss = () => (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 1.7;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fmtN = (n) => Math.floor(n).toLocaleString("ja-JP");
 
-  let ni, slot, work, workLog, later, done, current, locked, tonight;
+  let S;
 
-  const night = () => NIGHTS[ni];
-  const age = () => night().age;
-  const clockOf = (s) => { const m = 18 * 60 + s * 30; return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); };
-  const inRoom = () => night().roomFrom != null && slot >= night().roomFrom;
-
-  function show(id) { ["sTitle", "sYear", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
-
-  function say(text, kid) {
-    const sc = $("scene");
-    sc.querySelectorAll("p").forEach((p) => p.classList.add("old"));
-    while (sc.children.length > 3) sc.removeChild(sc.firstChild);
-    const p = document.createElement("p");
-    p.className = (kid ? "k " : "") + "fade-in";
-    p.textContent = text;
-    sc.appendChild(p);
+  function newLife() {
+    const c = pick(COUNTRIES);
+    const born = RI(1990, 2026);
+    const deathAge = Math.round(Math.max(42, Math.min(101, c.le + gauss() * 6 + 4)));
+    const parent = (ageAtBirth) => {
+      const dies = Math.round(Math.max(48, c.le + gauss() * 5 + 2));
+      return { alive: true, at: Math.max(14, dies - ageAtBirth) };
+    };
+    const momAt = RI(20, 36);
+    return {
+      c, born, name: pick(c.names), deathAge, age: 0,
+      mom: parent(momAt), dad: parent(momAt + RI(0, 6)),
+      sibs: Math.random() < 0.25 ? 0 : RI(1, 3), sibEnd: RI(45, 80), friendsEnd: RI(23, 40),
+      leaveAt: 99, visits: 0, workStart: 99, workRate: 1, home: 1, awayUntil: -1, retired: false, caring: false,
+      married: false, partnerEnd: 0, kids: [], tripEnd: 0,
+      count: Object.fromEntries(ORDER.map((k) => [k, 0])), last: {}, lastKid: {}, momBeforeLeave: 0,
+      lastYears: new Set(), famYear: [], asked: {}
+    };
   }
 
-  function renderStrip() {
-    const st = $("strip");
-    st.innerHTML = "";
-    for (let i = 0; i < 6; i++) {
-      const b = document.createElement("div");
-      const f = night().fixed[i];
-      b.className = "blk" + (f ? " fixed" : "") + (i === slot ? " now" : "") + (i < slot ? " past" : "");
-      b.textContent = f || "";
-      st.appendChild(b);
-    }
-    $("pClock").textContent = clockOf(Math.min(slot, 6));
-  }
-
-  function renderLater(interactive) {
-    const ul = $("laterList");
-    ul.innerHTML = "";
-    $("laterHint").hidden = !(interactive && later.length);
-    if (!later.length) {
-      const li = document.createElement("li");
-      li.className = "empty";
-      li.textContent = "まだない";
-      ul.appendChild(li);
-      return;
-    }
-    later.forEach((item) => {
-      const li = document.createElement("li");
-      const b = document.createElement("button");
-      b.type = "button";
-      b.disabled = !interactive;
-      b.innerHTML = "<span></span><span></span>";
-      b.children[0].textContent = item.req.label;
-      b.children[1].textContent = item.age + "歳のとき";
-      b.addEventListener("click", () => choose({ kind: "later", item }));
-      li.appendChild(b);
-      ul.appendChild(li);
+  // Choices: each returns a promise of the chosen option index.
+  function ask(q, opts) {
+    return new Promise((res) => {
+      $("cQ").textContent = q;
+      const box = $("cOpts");
+      box.innerHTML = "";
+      opts.forEach((o, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "opt";
+        b.textContent = o;
+        b.addEventListener("click", () => { $("choice").hidden = true; res(i); });
+        box.appendChild(b);
+      });
+      $("choice").hidden = false;
     });
   }
 
-  function renderWork() {
-    const latest = workLog[workLog.length - 1];
-    $("workNote").textContent = "仕事：" + (latest || "まだこれから");
+  function log(text) {
+    const box = $("log");
+    const p = document.createElement("p");
+    const a = document.createElement("span");
+    a.className = "age";
+    a.textContent = S.age + "歳";
+    p.appendChild(a);
+    p.appendChild(document.createTextNode(text));
+    box.appendChild(p);
+    while (box.children.length > 4) box.removeChild(box.firstChild);
   }
 
-  function eligibleReq() {
-    const a = age();
-    if (inRoom()) return null;
-    const chance = a <= 7 ? 1 : a <= 8 ? 0.85 : a <= 10 ? 0.65 : 0.5;
-    if (Math.random() > chance) return null;
-    const pool = REQS.filter((r) => a >= r.ask[0] && a <= r.ask[1] && !tonight.has(r.id));
-    if (!pool.length) return null;
-    const notPending = pool.filter((r) => !later.some((l) => l.req.id === r.id));
-    return pick(notPending.length && Math.random() < 0.7 ? notPending : pool);
-  }
+  async function events() {
+    const a = S.age;
+    if (a === 0) log(S.c.city + "で生まれる。" + (S.sibs ? "きょうだいは" + S.sibs + "人。" : "ひとりっ子。"));
+    if (a === 6) log("学校に通いはじめる。");
 
-  function button(html, cls, onClick) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "choice" + (cls ? " " + cls : "");
-    b.innerHTML = html;
-    b.addEventListener("click", onClick);
-    return b;
-  }
+    if (a === 18 && !S.asked.leave) {
+      S.asked.leave = true;
+      const i = await ask("高校を出たあと、どうする？", ["地元に残る", "都会に出る", "遠くの国へ行く"]);
+      if (i === 0) { S.leaveAt = 26; S.visits = 40; S.workStart = 18; log("地元で働きはじめる。"); }
+      if (i === 1) { S.leaveAt = 18; S.visits = 4; S.workStart = 22; log("都会に出る。"); }
+      if (i === 2) { S.leaveAt = 18; S.visits = 0.7; S.workStart = 22; log("遠くの国へ行く。"); }
+    }
+    if (a === S.leaveAt && S.leaveAt === 26) log("実家を出て、近くに部屋を借りる。");
+    if (a === S.workStart && S.workStart === 22) log("働きはじめる。");
 
-  function fixedLine(f) {
-    if (f === "夕飯") return age() >= 10 ? "夕飯。ハルはおかわりをする。" : "夕飯をつくって、食べさせる。";
-    if (f === "お風呂") return "お風呂に入れる。";
-    if (f === "寝かしつけ") return "寝かしつける。";
-    if (f === "おやすみ") return "「おやすみ」";
-    return f + "。";
-  }
-
-  async function nextSlot() {
-    locked = false;
-    renderStrip();
-    if (slot >= 6) return endNight();
-
-    const fixed = night().fixed[slot];
-    const box = $("choices");
-    box.innerHTML = "";
-    if (fixed) {
-      renderLater(false);
-      say(fixedLine(fixed));
-      await wait(reduce ? 500 : 1500);
-      slot += 1;
-      return nextSlot();
+    if (a === 25 && !S.asked.work) {
+      S.asked.work = true;
+      const i = await ask("仕事は、どれくらいやる？", ["打ち込む。上を目指す", "ほどほどにする"]);
+      if (i === 0) { S.workRate = 1.25; S.home = 0.65; } else { S.workRate = 1; S.home = 0.9; }
     }
 
-    current = eligibleReq();
-    if (current) {
-      const pending = later.some((l) => l.req.id === current.id);
-      say("「" + (pending ? current.again : current.say) + "」", true);
-      box.appendChild(button("<b>" + esc(current.act) + "</b>", "kid", () => choose({ kind: "req" })));
-    } else if (inRoom()) {
-      say("ハルは部屋にいる。");
-    } else {
-      say(age() >= 10 ? "ハルはソファでスマホを見ている。" : "ハルはひとりで遊んでいる。");
-    }
-    const w = WORK[work % WORK.length][0];
-    box.appendChild(button("<b>仕事をする</b><small>" + esc(w) + "</small>", "", () => choose({ kind: "work" })));
-    box.appendChild(button("<b>少し休む</b>", "", () => choose({ kind: "rest" })));
-    renderLater(true);
-  }
-
-  async function choose(c) {
-    if (locked) return;
-    locked = true;
-    $("choices").querySelectorAll("button").forEach((b) => { b.disabled = true; });
-    renderLater(false);
-
-    const answersCurrent = c.kind === "req" || (c.kind === "later" && current && c.item.req.id === current.id);
-    const deferred = current && !answersCurrent;
-    if (deferred) { say("「あとでね」"); await wait(reduce ? 200 : 700); }
-
-    if (c.kind === "req") {
-      say(current.ok);
-      done.push({ label: current.label, age: age() });
-      tonight.add(current.id);
-      later = later.filter((l) => l.req.id !== current.id);
-    } else if (c.kind === "work") {
-      say(WORK[work % WORK.length][1]);
-      work += 1;
-      const m = WORK_MILESTONES.find(([n]) => n === work);
-      if (m) { workLog.push(m[1]); await wait(reduce ? 200 : 600); say(m[1] + "。"); }
-    } else if (c.kind === "rest") {
-      say(REST);
-    } else if (c.kind === "later") {
-      const item = c.item;
-      later = later.filter((l) => l !== item);
-      if (age() <= item.req.until) {
-        say(item.req.ok);
-        done.push({ label: item.req.label, age: age() });
-        tonight.add(item.req.id);
-      } else {
-        say(item.req.late, true);
+    if ((a === 28 || a === 34) && !S.married && !S.asked["p" + a] && Math.random() < (a === 28 ? 0.85 : 0.55)) {
+      S.asked["p" + a] = true;
+      const i = await ask("いっしょに暮らしたい人がいる。", ["結婚する", "まだいい"]);
+      if (i === 0) {
+        S.married = true;
+        S.partnerEnd = Math.max(a + 3, Math.round(S.c.le + gauss() * 6 + 3));
+        log("結婚する。");
       }
     }
 
-    if (deferred && !later.some((l) => l.req.id === current.id)) later.push({ req: current, age: age() });
-    current = null;
-    renderLater(false);
-    renderWork();
-    await wait(reduce ? 400 : 1700);
-    slot += 1;
-    nextSlot();
+    if (S.married && (a === 31 || a === 37) && !S.asked["k" + a] && S.kids.length < 2) {
+      S.asked["k" + a] = true;
+      const i = await ask(a === 31 ? "子どもがほしい？" : "もう一人、ほしい？", ["ほしい", "今はいい"]);
+      if (i === 0) {
+        S.kids.push({ at: a + 1, dakko: RI(5, 7), furo: RI(7, 10), te: RI(8, 11), leave: RI(18, 23) });
+        if (!S.tripEnd) S.tripEnd = a + 1 + RI(14, 19);
+      }
+    }
+    S.kids.forEach((k, i) => {
+      if (a === k.at) log((i === 0 ? "子どもが生まれる。" : "二人目が生まれる。"));
+      if (a === k.at + k.leave) log((S.kids.length > 1 ? (i === 0 ? "上の子" : "下の子") : "子ども") + "が家を出る。");
+    });
+
+    if (a === 42 && S.workStart < 99 && !S.retired && !S.asked.move) {
+      S.asked.move = true;
+      const i = await ask("遠くへの転勤の話。受ければ昇進する。", ["受ける", "断る"]);
+      if (i === 0) { S.awayUntil = a + 3; S.workRate += 0.2; log("単身赴任がはじまる。"); }
+    }
+
+    for (const [key, who] of [["mom", "母"], ["dad", "父"]]) {
+      const p = S[key];
+      if (p.alive && !S.asked["care" + key] && a === p.at - 2 && a >= 30) {
+        S.asked["care" + key] = true;
+        const i = await ask(who + "が体調を崩したと連絡があった。", ["実家の近くに戻る", "帰る回数を増やす", "今のままにする"]);
+        if (i === 0) { S.caring = true; S.visits = Math.max(S.visits, 120); log("実家の近くに戻る。"); }
+        if (i === 1) { S.visits = Math.max(S.visits * 3, 6); }
+      }
+      if (p.alive && a === p.at) {
+        p.alive = false;
+        const last = S.last[key];
+        log(who + "が亡くなる。" + (last != null ? "最後にいっしょにごはんを食べたのは、" + (last === a ? "今年" : last + "歳のとき") + "だった。" : ""));
+      }
+    }
+
+    if (S.married && a === S.partnerEnd) { S.married = false; S.partnerEnd = -1; log("パートナーが亡くなる。"); }
+
+    if (a === 65 && S.workStart < 99 && !S.retired && !S.asked.retire) {
+      S.asked.retire = true;
+      const i = await ask("65歳。仕事はどうする？", ["まだ続ける", "辞める"]);
+      if (i === 1) { S.retired = true; S.home = 1; log("仕事を辞める。"); }
+    }
+    if (a === 72 && !S.retired && S.workStart < 99) { S.retired = true; S.home = 1; log("仕事を辞める。"); }
   }
 
-  async function endNight() {
-    $("choices").innerHTML = "";
-    say(age() >= 10 ? "今日も終わった。" : "寝息が聞こえる。今日も終わった。");
-    await wait(reduce ? 600 : 1800);
-    document.body.classList.add("dark");
-    await wait(reduce ? 0 : 1300);
-    ni += 1;
-    if (ni < NIGHTS.length) openYear();
-    else showEnd();
-    document.body.classList.remove("dark");
+  function tick() {
+    const a = S.age;
+    const inc = {};
+    const atHome = a < S.leaveAt && a < 18 || (a < S.leaveAt);
+    const home = a < S.awayUntil ? 0.25 : S.home;
+    const visits = S.caring ? 120 : S.visits;
+
+    for (const key of ["mom", "dad"]) {
+      if (!S[key].alive || a < 1) continue;
+      inc[key] = atHome ? (a < 18 ? 330 : 250) : visits * 2;
+    }
+    if (S.sibs && a >= 2 && a < S.sibEnd) inc.sib = a < 12 ? 300 : atHome ? 120 : Math.min(visits, 3) * S.sibs;
+    if (a >= 6 && a < 18) inc.friends = 40;
+    else if (a >= 18 && a < S.friendsEnd) inc.friends = Math.max(1, Math.round(4 - (a - 18) / 4));
+    if (S.married && a < S.deathAge) inc.partner = 300 * home;
+    S.kids.forEach((k) => {
+      const ka = a - k.at;
+      if (ka < 0) return;
+      if (ka < k.dakko) { inc.dakko = (inc.dakko || 0) + 280 * home; S.lastKid.dakko = ka; }
+      if (ka >= 1 && ka < k.furo) { inc.furo = (inc.furo || 0) + 230 * home; S.lastKid.furo = ka; }
+      if (ka >= 1 && ka < k.te) { inc.te = (inc.te || 0) + 140 * home; S.lastKid.te = ka; }
+      if (ka >= 1) inc.kmeal = (inc.kmeal || 0) + (ka < k.leave ? 320 * home : 4);
+    });
+    if (S.kids.length && a >= S.kids[S.kids.length - 1].at + 2 && a < S.tripEnd) inc.trip = 1;
+    if (a >= S.workStart && !S.retired) inc.work = 230 * S.workRate;
+
+    let fam = 0;
+    for (const k of Object.keys(inc)) {
+      if (!(inc[k] > 0)) continue;
+      S.count[k] += inc[k];
+      if (k === "mom" && a < S.leaveAt) S.momBeforeLeave += inc[k];
+      S.last[k] = a;
+      if (FAMILY.includes(k)) fam += inc[k];
+    }
+    S.famYear[a] = fam;
   }
 
-  function openYear() {
-    $("yAge").textContent = "ハル " + age() + "歳";
-    $("yNote").textContent = night().note;
-    show("sYear");
+  function markLasts() {
+    // A year gets a dot when some count had its final occurrence that year. Only known in hindsight.
+    S.lastYears = new Set(ORDER.filter((k) => k !== "work" && S.last[k] != null && S.last[k] < S.deathAge).map((k) => S.last[k]));
   }
 
-  function startNight() {
-    slot = 0;
-    tonight = new Set();
-    $("scene").innerHTML = "";
-    $("pWho").textContent = "ハル " + age() + "歳";
-    renderWork();
-    show("sPlay");
-    nextSlot();
-  }
-
-  function fill(id, rows, empty) {
-    const ul = $(id);
-    ul.innerHTML = "";
-    if (!rows.length) rows = [[empty, ""]];
-    rows.forEach(([l, r]) => {
-      const li = document.createElement("li");
-      li.innerHTML = "<span></span><span></span>";
-      li.children[0].textContent = l;
-      li.children[1].textContent = r;
-      ul.appendChild(li);
+  function renderLedger() {
+    const box = $("ledger");
+    box.innerHTML = "";
+    ORDER.forEach((k) => {
+      if (!(S.count[k] >= 1)) return;
+      const row = document.createElement("div");
+      row.className = "row" + (k === "work" ? " work" : "");
+      row.innerHTML = "<span></span><b></b>";
+      row.children[0].textContent = LABELS[k];
+      row.children[1].textContent = fmtN(S.count[k]) + "回";
+      box.appendChild(row);
     });
   }
 
-  function showEnd() {
-    fill("eWork", workLog.map((w) => [w, ""]).concat([["仕事に使った夜の時間", work * 30 + "分"]]), "なし");
-    fill("eDone", done.map((d) => [d.label, d.age + "歳"]), "なし");
-    fill("eLater", later.map((l) => [l.req.label, l.age + "歳のとき"]), "なし");
+  function renderMap(el, upto, final) {
+    el.innerHTML = "";
+    const total = Math.ceil((S.deathAge + 1) / 10) * 10;
+    const max = Math.max(1, ...S.famYear.filter((x) => x != null));
+    for (let y = 0; y < total; y++) {
+      const i = document.createElement("i");
+      if (y <= upto && y <= S.deathAge) {
+        const t = (S.famYear[y] || 0) / max;
+        i.style.background = "color-mix(in srgb, var(--teal) " + Math.round(12 + t * 80) + "%, var(--map0))";
+        if (final && S.lastYears.has(y)) i.className = "last";
+      } else if (final) {
+        i.className = "dead";
+      }
+      el.appendChild(i);
+    }
+  }
+
+  async function live() {
+    S = newLife();
+    $("pName").textContent = S.name;
+    $("pPlace").textContent = S.c.name + "・" + S.c.city;
+    $("log").innerHTML = "";
+    $("choice").hidden = true;
+    show("sPlay");
+    for (S.age = 0; S.age <= S.deathAge; S.age++) {
+      $("pAge").innerHTML = S.age + "<small>歳</small>";
+      $("pYear").textContent = (S.born + S.age) + "年";
+      await events();
+      tick();
+      renderLedger();
+      renderMap($("pMap"), S.age, false);
+      const ms = reduce ? 60 : S.age < 18 ? 260 : 360;
+      await wait(ms);
+    }
+    log("生涯を閉じる。");
+    await wait(1600);
+    finish();
+  }
+
+  function finish() {
+    markLasts();
+    const country = S.c;
+    $("eId").textContent = "LIFE-" + (S.born) + "-" + String(S.deathAge).padStart(3, "0");
+    $("eName").textContent = S.name;
+    $("eMeta").textContent = country.name + "・" + country.city + "　" + S.born + "–" + (S.born + S.deathAge) + "　" + S.deathAge + "歳で生涯を閉じる";
+
+    const momTotal = S.count.mom;
+    if (momTotal > 0 && S.leaveAt < 99 && S.momBeforeLeave < momTotal) {
+      const pct = Math.round(100 * S.momBeforeLeave / momTotal);
+      $("eBig").textContent = pct + "%";
+      $("eBigText").textContent = "母と食べたごはんのうち、家を出る" + S.leaveAt + "歳までに食べ終わっていた割合。";
+    } else {
+      $("eBig").textContent = fmtN(momTotal) + "回";
+      $("eBigText").textContent = "母と食べたごはんの、一生ぶん。";
+    }
+
+    const t = $("eTally");
+    t.innerHTML = "<h3>一生で、何回だったか</h3>";
+    ORDER.forEach((k) => {
+      if (!(S.count[k] >= 1)) return;
+      const row = document.createElement("div");
+      row.className = "row" + (k === "work" ? " work" : "");
+      row.innerHTML = "<span></span><b></b><span></span>";
+      row.children[0].textContent = LABELS[k];
+      row.children[1].textContent = fmtN(S.count[k]) + "回";
+      const last = S.last[k];
+      const kid = S.lastKid[k] != null ? "（子どもが" + S.lastKid[k] + "歳）" : "";
+      row.children[2].textContent = k === "work" ? "積み上がった" : last >= S.deathAge ? "最後まで" : "最後は " + last + "歳" + kid;
+      t.appendChild(row);
+    });
+    renderMap($("eMap"), S.deathAge, true);
     show("sEnd");
   }
 
-  function reset() {
-    ni = 0; work = 0; workLog = []; later = []; done = []; current = null; locked = false;
-    show("sTitle");
-  }
+  function show(id) { ["sTitle", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
 
-  $("bStart").addEventListener("click", openYear);
-  $("bNight").addEventListener("click", startNight);
-  $("bAgain").addEventListener("click", reset);
-  reset();
+  $("bStart").addEventListener("click", live);
+  $("bAgain").addEventListener("click", live);
 })();
 </script>
