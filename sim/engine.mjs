@@ -37,7 +37,7 @@ function hash(str) {
   h += h << 13; h ^= h >>> 7; h += h << 3; h ^= h >>> 17; h += h << 5;
   return (h >>> 0) / 4294967296;
 }
-const mkRand = (seed) => (key) => hash(seed + "|" + key);
+export const mkRand = (seed) => (key) => hash(seed + "|" + key);
 const gaussFrom = (r, key) => {
   const u = Math.max(1e-9, r(key + "a")), v = r(key + "b");
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);

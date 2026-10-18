@@ -136,6 +136,7 @@
 - `node sim/parse-events.mjs`：[events/](events/) の200件を読み取り、`sim/events.json` にする。
 - `node sim/run.mjs [seed] [dictator|keeper|heretic]`：一つの家族を、本来の人生とあなたの思想が入った人生で比べて出力する。
 - `node sim/samples.mjs`：出力例を [samples.md](samples.md) に書く。
+- `node sim/build-play.mjs`：エンジン、結果の文章、出来事、統計を `play/` に写す。`play/index.html` が、診断からシミュレーションまでを通して遊べる試作。
 - 統計は `data/countries.json`。出典と、まだ入っていない統計は [statistics.md](statistics.md)。
 
 確率や価値の重み、結果の読み取り方はすべて仮。年表がどう出るかを見るためのもの。
@@ -187,6 +188,6 @@
 - 残りの統計の取得（[statistics.md](statistics.md) の「まだ入っていない統計」）。世界価値観調査は手で取得が必要
 - 年表の粒度（毎年か、出来事のある年だけか）
 - 子どもの代の終わり（子どもが何歳になるまで見せるか）
-- 各タイプの一言と説明文
+- 各タイプの一言と説明文（第1稿は [types.md](types.md)）
 - 出来事の一覧の推敲と、統計への結びつけ（[events.md](events.md)、第1稿200件）
 - 画面の構成

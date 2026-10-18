@@ -1,0 +1,480 @@
+<meta charset="utf-8">
+<title>あと何回</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one reading column. Diagnosis = one question per screen; result = a record card; life = rows by the child's age, each row showing the original life and yours, merged when they match. */
+  :root {
+    --bg: #eef0ec;
+    --card: #f9faf7;
+    --fg: #1e2924;
+    --muted: #66726c;
+    --line: #cdd4cf;
+    --brand: #8a1c3c;
+    --on-brand: #fbf3f5;
+    --mine: #8a1c3c;
+    --mine-soft: #f3e3e8;
+    --orig: #2f5f7a;
+    --orig-soft: #e1ebf1;
+    --teal: #1f6e64;
+    --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    --font-title: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131917; --card: #1b2320; --fg: #dfe6e2; --muted: #8f9b95; --line: #2d3834;
+      --brand: #d0567a; --on-brand: #1b0c12; --mine: #e07a98; --mine-soft: #36202a; --orig: #7fb0cc; --orig-soft: #1d2c35; --teal: #5fb3a6;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131917; --card: #1b2320; --fg: #dfe6e2; --muted: #8f9b95; --line: #2d3834;
+    --brand: #d0567a; --on-brand: #1b0c12; --mine: #e07a98; --mine-soft: #36202a; --orig: #7fb0cc; --orig-soft: #1d2c35; --teal: #5fb3a6;
+    color-scheme: dark;
+  }
+
+  html, body { min-height: 100%; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.7; }
+  .wrap {
+    max-width: 36rem; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .screen[hidden] { display: none !important; }
+  .muted { color: var(--muted); }
+  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { text-wrap: balance; }
+
+  .btn { font: inherit; font-weight: 700; font-size: 1rem; padding: 12px 24px; border: 0; border-radius: 6px; background: var(--brand); color: var(--on-brand); cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+  .btn:focus-visible, .ans:focus-visible, .chip:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  /* title */
+  .title { font-family: var(--font-title); font-weight: 800; font-size: 2.8rem; letter-spacing: 0.1em; margin: 12vh 0 10px; line-height: 1.2; }
+  .steps { list-style: none; margin: 20px 0 28px; padding: 0; display: grid; gap: 10px; }
+  .steps li { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 8px; }
+  .steps b { font-family: var(--font-num); color: var(--brand); }
+
+  /* quiz */
+  .progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+  .progress i { display: block; height: 100%; background: var(--brand); width: 0; transition: width 0.2s; }
+  .qmeta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 26px; }
+  .prompt { color: var(--muted); font-size: 0.9rem; margin: 0 0 8px; }
+  .qtext { font-family: var(--font-title); font-weight: 600; font-size: 1.45rem; line-height: 1.6; margin: 0 0 24px; min-height: 4.6em; }
+  .answers { display: grid; gap: 8px; }
+  .ans { font: inherit; text-align: left; padding: 13px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); cursor: pointer; }
+  .ans:hover { border-color: var(--brand); }
+  .ans.big { padding: 18px 16px; font-size: 1.05rem; }
+  .back { margin-top: 18px; font: inherit; font-size: 0.85rem; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chip { font: inherit; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+  .chip .n { font-family: var(--font-num); margin-right: 6px; }
+
+  /* result */
+  .card { background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--line); overflow: hidden; }
+  .band { background: var(--brand); color: var(--on-brand); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .band b { font-family: var(--font-title); font-weight: 800; font-size: 1.3rem; letter-spacing: 0.1em; }
+  .band span { font-family: var(--font-num); font-size: 0.75rem; opacity: 0.85; }
+  .card .body { padding: 20px 18px 24px; display: grid; gap: 22px; }
+  .you { font-size: 0.85rem; color: var(--muted); }
+  .tname { font-family: var(--font-title); font-weight: 800; font-size: 2.1rem; line-height: 1.25; margin: 2px 0 0; }
+  .tsub { font-family: var(--font-title); font-weight: 600; font-size: 1.15rem; color: var(--brand); margin-top: 4px; }
+  .tline { font-weight: 700; font-size: 1.05rem; border-left: 3px solid var(--brand); padding-left: 12px; }
+  .card h3 { font-size: 0.8rem; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px; }
+  .radar { display: block; width: 100%; max-width: 20rem; margin: 0 auto; height: auto; }
+  .radar text { font-family: var(--font-body); font-size: 11px; fill: var(--muted); }
+  .contra { display: grid; gap: 12px; }
+  .contra p { margin: 0; }
+  .contra .big { font-family: var(--font-title); font-weight: 800; font-size: 1.25rem; line-height: 1.5; }
+  .bridge { font-family: var(--font-title); font-weight: 600; font-size: 1.15rem; line-height: 1.6; }
+
+  /* life */
+  .fam { display: grid; gap: 4px; }
+  .fam .place { font-family: var(--font-title); font-weight: 800; font-size: 1.8rem; line-height: 1.25; }
+  .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 16px 0; }
+  .facts div { min-width: 0; }
+  .facts small { display: block; color: var(--muted); font-size: 0.75rem; }
+  .facts b { font-weight: 500; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.8rem; margin: 18px 0 10px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .legend .o::before { background: var(--orig); }
+  .legend .m::before { background: var(--mine); }
+  .legend .s::before { background: var(--line); }
+  .tl { display: grid; gap: 14px; }
+  .yr { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); gap: 10px; }
+  .yr .age { font-family: var(--font-num); font-size: 0.8rem; color: var(--muted); padding-top: 3px; text-align: right; }
+  .yr .cells { display: grid; gap: 6px; min-width: 0; }
+  .cellb { border-radius: 6px; padding: 8px 12px; font-size: 0.9rem; border-left: 3px solid var(--line); background: var(--card); }
+  .cellb.o { border-left-color: var(--orig); background: var(--orig-soft); }
+  .cellb.m { border-left-color: var(--mine); background: var(--mine-soft); }
+  .cellb .lab { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); display: block; }
+  .cellb.o .lab { color: var(--orig); }
+  .cellb.m .lab { color: var(--mine); }
+  .cellb p { margin: 0; }
+  .cellb .why { margin-top: 6px; font-size: 0.82rem; color: var(--mine); }
+  .note { font-weight: 700; }
+  .endtbl { display: grid; gap: 10px; margin-top: 24px; }
+  .endtbl h3 { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  .src { font-size: 0.75rem; color: var(--muted); margin-top: 28px; }
+  .fade { animation: fade 0.35s ease both; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .fade { animation: none; } .progress i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <section class="screen" id="sTitle">
+    <h1 class="title">あと何回</h1>
+    <p>あなたの価値観を診断して、その思想を、地球のどこかの、誰かの親に入れてみる。</p>
+    <ol class="steps">
+      <li><b>1</b><span>73問に答えて、あなたの価値観のタイプと、あなたの矛盾を知る。（10分ほど）</span></li>
+      <li><b>2</b><span>世界の出生数どおりに、どこかの国の、ある家族が選ばれる。</span></li>
+      <li><b>3</b><span>その家族の親に、あなたの思想が入る。親は勝手に生きていく。あなたは手を出せない。</span></li>
+      <li><b>4</b><span>あなたの思想が入らなかった「本来の人生」と、並べて見る。</span></li>
+    </ol>
+    <button type="button" class="btn" id="bStart">診断をはじめる</button>
+  </section>
+
+  <section class="screen" id="sQuiz" hidden>
+    <div class="progress"><i id="qBar"></i></div>
+    <div class="qmeta"><span id="qPart"></span><span class="num" id="qCount"></span></div>
+    <p class="prompt" id="qPrompt"></p>
+    <p class="qtext" id="qText"></p>
+    <div id="qBody"></div>
+    <button type="button" class="back" id="bBack">ひとつ前に戻る</button>
+  </section>
+
+  <section class="screen" id="sResult" hidden>
+    <div class="card">
+      <div class="band"><b>あと何回</b><span>価値観の診断</span></div>
+      <div class="body">
+        <div>
+          <div class="you">あなたは</div>
+          <div class="tname" id="rName"></div>
+          <div class="tsub" id="rSub"></div>
+        </div>
+        <div class="tline" id="rLine"></div>
+        <p id="rBody" style="margin:0"></p>
+        <div>
+          <h3>10の価値</h3>
+          <svg class="radar" id="rRadar" viewBox="0 0 320 320" role="img" aria-label="10の価値のグラフ"></svg>
+        </div>
+        <div>
+          <h3>あなたの矛盾</h3>
+          <div class="contra" id="rContra"></div>
+        </div>
+        <div>
+          <h3>このタイプが親になると</h3>
+          <p id="rParent" style="margin:0"></p>
+        </div>
+        <div class="bridge">この思想を、地球のどこかの、誰かの親に入れてみますか？</div>
+        <div class="row-btns"><button type="button" class="btn" id="bLive">入れてみる</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="sLife" hidden>
+    <div class="fam">
+      <div class="muted">地球のどこかで、子どもが生まれた。</div>
+      <div class="place" id="lPlace"></div>
+    </div>
+    <div class="facts" id="lFacts"></div>
+    <div class="legend"><span class="o">本来の人生（親のもともとの価値観）</span><span class="m">あなたの思想が入った人生</span><span class="s">どちらも同じ</span></div>
+    <div class="tl" id="lTl"></div>
+    <div class="endtbl" id="lEnd"></div>
+    <div class="row-btns" style="margin-top:24px">
+      <button type="button" class="btn" id="bAgain">別の家族に入れる</button>
+      <button type="button" class="btn ghost" id="bResult">診断の結果に戻る</button>
+    </div>
+    <p class="src" id="lSrc"></p>
+  </section>
+</div>
+
+<script type="module">
+import { setData, live, pickCountry, nativeValues, center, topValue, VALUES, describeEnd, mkRand } from "./engine.mjs";
+import { TYPES, OPPOSED, WORD } from "./types.mjs";
+
+const $ = (id) => document.getElementById(id);
+const show = (id) => { for (const s of ["sTitle", "sQuiz", "sResult", "sLife"]) $(s).hidden = s !== id; window.scrollTo(0, 0); };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---- questions (docs/questions.md) ------------------------------------------------
+const PORTRAITS = {
+  自律: ["自分の考えで物事を決めることを、大切にしている人。", "人に指図されず、自分のやり方で進みたい人。", "新しいことを考え出し、工夫するのが好きな人。", "何を信じるかは、自分で決めたい人。", "分からないことは、自分で確かめないと気がすまない人。", "誰にも頼らず、自分の力で立っていたい人。"],
+  刺激: ["驚きや変化のある毎日を求めている人。", "退屈が、何よりも苦手な人。", "危なくても、心が躍ることをしてみたい人。", "同じ場所に長くいると、どこかへ行きたくなる人。", "誰もやったことのないことに、惹かれる人。", "平穏より、刺激のある人生を選びたい人。"],
+  快楽: ["楽しむことを、人生でいちばん大事にしている人。", "おいしいものや心地よいことに、時間とお金を使いたい人。", "我慢するより、今を楽しみたい人。", "自分を甘やかすことに、罪悪感がない人。", "楽しくないことは、できるだけしたくない人。", "人生は、楽しんだもの勝ちだと思っている人。"],
+  達成: ["人から認められるような成功を、手に入れたい人。", "自分の力を示すことが、大切だと思っている人。", "目標を立てて、それをやり遂げることに喜びを感じる人。", "人より上手にできることがあると、誇らしく思う人。", "結果を出せない自分を、許せない人。", "野心を持つことは、良いことだと思っている人。"],
+  権力: ["人の上に立ち、周りを動かしたい人。", "お金や財産を持つことが、大事だと思っている人。", "自分の言うことに人が従ってくれると、気分がいい人。", "決められる側ではなく、決める側にいたい人。", "力のない者は、力のある者に従うべきだと思っている人。", "好かれるより、恐れられるほうがいいと思うことがある人。"],
+  安全: ["安心して暮らせることを、何より大事にする人。", "危ないことは、できるだけ避けたい人。", "秩序が保たれていることが、大切だと思っている人。", "先の見通しが立たないと、不安になる人。", "自分と身内を守るためなら、多少のことには目をつむる人。", "強いものに守られていたい人。"],
+  同調: ["決まりは、守るべきだと思っている人。", "周りに迷惑をかけないことを、大事にしている人。", "目上の人には、従うべきだと思っている人。", "人から変に思われることを、避けたい人。", "自分の意見より、場の空気を優先することがある人。", "わがままを言わず、控えめでいることが美徳だと思う人。"],
+  伝統: ["昔から受け継がれてきたやり方を、守りたい人。", "信じているものや、しきたりを大切にしている人。", "与えられたもので満足するべきだと思っている人。", "先祖や、生まれた土地とのつながりを大事にしている人。", "新しいものより、変わらないものに価値を感じる人。", "人にはそれぞれ、役割や分というものがあると思う人。"],
+  慈善: ["身近な人の役に立つことに、喜びを感じる人。", "仲間や身内のためなら、自分を後回しにできる人。", "信頼してくれる人を、決して裏切りたくない人。", "困っている知り合いを、放っておけない人。", "身近な人を許し、受け入れることを大事にしている人。", "自分の周りの人が幸せなら、それでいいと思える人。"],
+  普遍: ["世界中のすべての人が、等しく扱われるべきだと思う人。", "自分と違う考えの人の話も、聞くべきだと思う人。", "自然や環境を守ることが、大切だと思っている人。", "会ったこともない人の不幸にも、心を痛める人。", "不正や差別を見ると、黙っていられない人。", "弱い立場の人を守ることが、社会の役目だと思う人。"]
+};
+const FORCED = [
+  ["自由に生きる", ["自律"], "安心して生きる", ["安全"]],
+  ["人の上に立つ", ["権力"], "人と対等でいる", ["普遍"]],
+  ["自分が勝つ", ["達成"], "身近な人を勝たせる", ["慈善"]],
+  ["今を楽しむ", ["快楽"], "しきたりを守る", ["伝統"]],
+  ["知らない世界へ行く", ["刺激"], "慣れた場所にいる", ["安全"]],
+  ["自分の信じる道を行く", ["自律"], "周りと足並みをそろえる", ["同調"]],
+  ["身近な一人を救う", ["慈善"], "見知らぬ十人を救う", ["普遍"]],
+  ["正しいけれど、ひとりきり", ["自律", "普遍"], "間違っていても、仲間といる", ["同調", "慈善"]],
+  ["豊かだが、不自由", ["権力", "安全"], "貧しいが、自由", ["自律"]],
+  ["退屈だが長い人生", ["安全"], "短いが燃えるような人生", ["刺激"]],
+  ["ルールを破ってでも、正しいことをする", ["普遍"], "正しくなくても、ルールを守る", ["同調"]],
+  ["受け継いだものを、次へ渡す", ["伝統"], "自分の代で、使い切る", ["快楽"]]
+];
+const RANK = [["自由", "自律"], ["安心", "安全"], ["成功", "達成"], ["愛", "慈善"], ["正しさ", "普遍"]];
+const SCALE = ["とても似ている", "似ている", "あまり似ていない", "まったく似ていない"];
+
+// Fixed shuffle so everyone sees the same order; a forced choice after every five portraits.
+function buildQuiz() {
+  const r = mkRand("quiz-order");
+  const ps = [];
+  for (const v of VALUES) PORTRAITS[v].forEach((t, i) => ps.push({ kind: "p", v, i, t, k: r(v + i) }));
+  ps.sort((a, b) => a.k - b.k);
+  const out = [];
+  let f = 0;
+  ps.forEach((p, i) => { out.push(p); if ((i + 1) % 5 === 0 && f < FORCED.length) out.push({ kind: "f", i: f++ }); });
+  while (f < FORCED.length) out.push({ kind: "f", i: f++ });
+  out.push({ kind: "r" });
+  return out;
+}
+const QUIZ = buildQuiz();
+let qi = 0, answers = {};
+
+function renderQ() {
+  const q = QUIZ[qi];
+  $("qBar").style.width = (100 * qi) / QUIZ.length + "%";
+  $("qCount").textContent = `${qi + 1} / ${QUIZ.length}`;
+  $("bBack").hidden = qi === 0;
+  const body = $("qBody");
+  body.innerHTML = "";
+  body.className = "fade";
+  if (q.kind === "p") {
+    $("qPart").textContent = "人物描写";
+    $("qPrompt").textContent = "こういう人は、あなたにどれくらい似ていますか？";
+    $("qText").textContent = q.t;
+    const box = document.createElement("div");
+    box.className = "answers";
+    SCALE.forEach((s, j) => box.appendChild(ansBtn(s, () => next(3 - j))));
+    body.appendChild(box);
+  } else if (q.kind === "f") {
+    const [a, , b] = FORCED[q.i];
+    $("qPart").textContent = "どちらかしか選べないなら";
+    $("qPrompt").textContent = "どちらかしか選べないなら、どちらを選びますか？";
+    $("qText").textContent = "";
+    const box = document.createElement("div");
+    box.className = "answers";
+    box.appendChild(ansBtn(a, () => next("a"), true));
+    box.appendChild(ansBtn(b, () => next("b"), true));
+    body.appendChild(box);
+  } else {
+    $("qPart").textContent = "最後の質問";
+    $("qPrompt").textContent = "人生で大切なものを、大切な順に押してください。";
+    $("qText").textContent = "";
+    const order = [];
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    const done = document.createElement("div");
+    done.className = "row-btns";
+    const go = document.createElement("button");
+    go.type = "button"; go.className = "btn"; go.textContent = "結果を見る"; go.disabled = true;
+    const reset = document.createElement("button");
+    reset.type = "button"; reset.className = "btn ghost"; reset.textContent = "並べ直す";
+    const draw = () => {
+      chips.innerHTML = "";
+      RANK.forEach(([t], idx) => {
+        const c = document.createElement("button");
+        c.type = "button"; c.className = "chip";
+        const pos = order.indexOf(idx);
+        c.setAttribute("aria-pressed", pos >= 0 ? "true" : "false");
+        c.innerHTML = (pos >= 0 ? `<span class="n">${pos + 1}</span>` : "") + esc(t);
+        c.onclick = () => { if (pos < 0) { order.push(idx); draw(); } };
+        chips.appendChild(c);
+      });
+      go.disabled = order.length < RANK.length;
+    };
+    reset.onclick = () => { order.length = 0; draw(); };
+    go.onclick = () => next(order.slice());
+    draw();
+    done.append(go, reset);
+    body.append(chips, done);
+  }
+}
+function ansBtn(text, fn, big) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "ans" + (big ? " big" : ""); b.textContent = text; b.onclick = fn;
+  return b;
+}
+function next(val) {
+  answers[qi] = val;
+  if (qi < QUIZ.length - 1) { qi++; renderQ(); } else finishQuiz();
+}
+$("bBack").onclick = () => { if (qi > 0) { qi--; renderQ(); } };
+
+// ---- scoring ----------------------------------------------------------------------------
+let PLAYER = null;
+function score() {
+  const sum = {}, cnt = {}, best = {};
+  for (const v of VALUES) { sum[v] = 0; cnt[v] = 0; }
+  const forced = [];
+  QUIZ.forEach((q, i) => {
+    const a = answers[i];
+    if (q.kind === "p") {
+      sum[q.v] += a; cnt[q.v]++;
+      if (!best[q.v] || a > best[q.v].a) best[q.v] = { a, t: q.t };
+    } else if (q.kind === "f") forced.push({ i: q.i, side: a });
+  });
+  const raw = {};
+  for (const v of VALUES) raw[v] = cnt[v] ? sum[v] / cnt[v] : 1.5;
+  const mean = VALUES.reduce((s, v) => s + raw[v], 0) / VALUES.length;
+  const val = {};
+  for (const v of VALUES) val[v] = Math.max(-1, Math.min(1, (raw[v] - mean) / 1.2));
+  for (const f of forced) {
+    const [, av, , bv] = FORCED[f.i];
+    for (const v of f.side === "a" ? av : bv) val[v] += 0.12 / (f.side === "a" ? av : bv).length;
+    for (const v of f.side === "a" ? bv : av) val[v] -= 0.12 / (f.side === "a" ? bv : av).length;
+  }
+  const order = answers[QUIZ.length - 1] || [];
+  order.forEach((idx, pos) => { val[RANK[idx][1]] += [0.2, 0.1, 0, 0, -0.1][pos]; });
+  const values = center(val);
+
+  // contradictions
+  const lines = [];
+  let sub = null, strongest = 0;
+  for (const o of OPPOSED) {
+    if (raw[o.a] >= 2 && raw[o.b] >= 2) {
+      const s = Math.min(raw[o.a], raw[o.b]);
+      lines.push({ s, big: o.line, small: `あなたは「${best[o.a].t.replace(/。$/, "")}」にも、「${best[o.b].t.replace(/。$/, "")}」にも、${SCALE[3 - Math.min(best[o.a].a, best[o.b].a)]}と答えました。` });
+      if (s > strongest) { strongest = s; sub = o.sub; }
+    }
+  }
+  // said both matter, but always picked one side when forced
+  const PAIRS = [["自律", "安全", [0, 8]], ["刺激", "安全", [4, 9]], ["自律", "同調", [5, 7]], ["権力", "普遍", [1]], ["達成", "慈善", [2]], ["快楽", "伝統", [3, 11]], ["普遍", "同調", [10]]];
+  for (const [x, y, qs] of PAIRS) {
+    if (!(raw[x] >= 2 && raw[y] >= 2)) continue;
+    const picks = forced.filter((f) => qs.includes(f.i)).map((f) => { const [, av, , bv] = FORCED[f.i]; return (f.side === "a" ? av : bv).includes(x) ? x : y; });
+    if (picks.length && picks.every((p) => p === picks[0])) {
+      const other = picks[0] === x ? y : x;
+      lines.push({ s: 1.5, big: `${WORD[other]}も大事だと、あなたは言いました。でも、どちらかを選ぶときは、いつも${WORD[picks[0]]}を選びました。`, small: "" });
+      if (!sub) sub = `${WORD[other]}を語りながら`;
+    }
+  }
+  lines.sort((a, b) => b.s - a.s);
+  if (!lines.length) {
+    const sorted = VALUES.slice().sort((a, b) => values[b] - values[a]);
+    lines.push({ s: 0, big: `あなたは迷いなく、${WORD[sorted[0]]}を選び、${WORD[sorted[sorted.length - 1]]}を手放す人です。`, small: "その迷いのなさが、誰かの人生に入ったとき、どう働くかはまだ分かりません。" });
+  }
+  return { values, raw, best, top: topValue(values), sub, lines: lines.slice(0, 3) };
+}
+
+function finishQuiz() {
+  PLAYER = score();
+  const t = TYPES[PLAYER.top];
+  $("rName").textContent = t.name;
+  $("rSub").textContent = PLAYER.sub ? `── ${PLAYER.sub}` : "";
+  $("rLine").textContent = t.line;
+  $("rBody").textContent = t.body;
+  $("rParent").textContent = t.parent;
+  $("rContra").innerHTML = PLAYER.lines.map((l) => `<p class="big">${esc(l.big)}</p>${l.small ? `<p class="muted">${esc(l.small)}</p>` : ""}`).join("");
+  drawRadar(PLAYER.values);
+  show("sResult");
+}
+
+function drawRadar(v) {
+  const cx = 160, cy = 160, R = 110, n = VALUES.length;
+  const pt = (i, r) => [cx + r * Math.sin((2 * Math.PI * i) / n), cy - r * Math.cos((2 * Math.PI * i) / n)];
+  let s = "";
+  for (const k of [0.25, 0.5, 0.75, 1]) s += `<polygon points="${VALUES.map((_, i) => pt(i, R * k).join(",")).join(" ")}" fill="none" stroke="var(--line)"/>`;
+  VALUES.forEach((name, i) => {
+    const [x, y] = pt(i, R + 18);
+    s += `<line x1="${cx}" y1="${cy}" x2="${pt(i, R)[0]}" y2="${pt(i, R)[1]}" stroke="var(--line)"/>`;
+    s += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle">${name}</text>`;
+  });
+  const poly = VALUES.map((k, i) => pt(i, R * Math.max(0.05, (v[k] + 1) / 2)).join(",")).join(" ");
+  s += `<polygon points="${poly}" fill="var(--mine)" fill-opacity="0.22" stroke="var(--mine)" stroke-width="2"/>`;
+  $("rRadar").innerHTML = s;
+}
+
+// ---- life ---------------------------------------------------------------------------------
+let FAMILY = 0;
+const TIERS = ["", "最も貧しい層", "貧しい層", "真ん中の層", "やや豊かな層", "豊かな層"];
+function runLife() {
+  FAMILY++;
+  const seed = `fam-${Date.now()}-${FAMILY}`;
+  const r = mkRand(seed);
+  const c = pickCountry(r);
+  const native = nativeValues(r, c, "parentnative");
+  const a = live({ seed, country: c, parentValues: native, label: "本来" });
+  const b = live({ seed, country: c, parentValues: PLAYER.values, label: "あなた" });
+
+  $("lPlace").textContent = c.nameJa;
+  const facts = [
+    ["平均寿命", `${c.lifeExpectancy.toFixed(1)}歳`], ["1,000人あたりの乳児の死亡", c.infantMortality != null ? `${c.infantMortality.toFixed(1)}人` : "不明"],
+    ["極度の貧困の割合", `${c.poverty.toFixed(1)}%${c.povertyEstimated ? "（推定）" : ""}`], ["この家族の所得", TIERS[a.tier]],
+    ["親", `${a.parent.name}（${a.rows[0].parentAge}歳）`], ["子", a.kid.name],
+    ["本来の親の価値観", TYPES[topValue(native)].name], ["あなたの思想", TYPES[PLAYER.top].name + (PLAYER.sub ? ` ── ${PLAYER.sub}` : "")]
+  ];
+  $("lFacts").innerHTML = facts.map(([k, v]) => `<div><small>${k}</small><b>${esc(v)}</b></div>`).join("");
+
+  const tl = $("lTl");
+  tl.innerHTML = "";
+  let quotes = 0;
+  const n = Math.max(a.rows.length, b.rows.length);
+  for (let i = 0; i < n; i++) {
+    const ra = a.rows[i], rb = b.rows[i];
+    const ta = lines(ra), tb = lines(rb);
+    if (!ta.length && !tb.length) continue;
+    const row = document.createElement("div");
+    row.className = "yr fade";
+    const age = (ra || rb).kidAge;
+    let html = `<div class="age">${esc(a.kid.name)}<br>${age}歳</div><div class="cells">`;
+    if (ta.join() === tb.join()) {
+      html += cellHtml("s", "どちらも", ta);
+    } else {
+      let why = "";
+      if (rb && quotes < 4) {
+        const d = rb.parent.find((e) => { const o = ra && ra.parent.find((x) => x.id === e.id); return !o || o.choiceIndex !== e.choiceIndex; });
+        if (d && d.top && PLAYER.best[d.top]) {
+          why = `あなたの「${PLAYER.best[d.top].t.replace(/。$/, "")}」に「${SCALE[3 - PLAYER.best[d.top].a]}」という答えが、この親にそうさせた。`;
+          quotes++;
+        }
+      }
+      if (ta.length) html += cellHtml("o", "本来の人生", ta);
+      if (tb.length) html += cellHtml("m", "あなたの思想が入った人生", tb, why);
+    }
+    row.innerHTML = html + "</div>";
+    tl.appendChild(row);
+  }
+
+  const ea = describeEnd(a), eb = describeEnd(b);
+  $("lEnd").innerHTML = `<h3>終わり</h3>` + cellHtml("o", "本来の人生", ea) + cellHtml("m", "あなたの思想が入った人生", eb);
+  $("lSrc").textContent = "統計：世界銀行 世界開発指標（datahub.io の写し）、Our World in Data。確率や価値の重みは試作の仮の値。本来の親の価値観は、世界価値観調査のデータを入れるまでの仮の作り方。";
+  show("sLife");
+}
+function lines(row) {
+  if (!row) return [];
+  const out = row.notes.map((t) => `<span class="note">${esc(t)}</span>`);
+  for (const e of row.parent) out.push(`親　${esc(e.title)}：${esc(e.choice)}。${esc(e.realized.join("。"))}${e.realized.length ? "。" : ""}`);
+  for (const e of row.kid) out.push(`子　${esc(e.title)}：${esc(e.choice)}。${esc(e.realized.join("。"))}${e.realized.length ? "。" : ""}`);
+  return out;
+}
+function cellHtml(cls, label, ls, why) {
+  return `<div class="cellb ${cls}"><span class="lab">${label}</span>${ls.map((l) => `<p>${l}</p>`).join("")}${why ? `<p class="why">── ${esc(why)}</p>` : ""}</div>`;
+}
+
+// ---- boot ---------------------------------------------------------------------------------
+const [events, countries] = await Promise.all([fetch("events.json").then((r) => r.json()), fetch("countries.json").then((r) => r.json())]);
+setData(events, countries);
+$("bStart").onclick = () => { qi = 0; answers = {}; renderQ(); show("sQuiz"); };
+$("bLive").onclick = runLife;
+$("bAgain").onclick = runLife;
+$("bResult").onclick = () => show("sResult");
+</script>
