@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700;800&family=Klee+One:wght@600&display=swap">
 <style>
-  /* Layout: one screen. Age + years bar on top, a lit room with the child in the middle (the hold target), the pile of things to do at the bottom. */
+  /* Layout: one screen. Age + years bar on top, a lit room with the child in the middle (the hold target), the loan bar under the age. */
   :root {
     --bg: #f1eee8;
     --room: #f7efe0;
@@ -59,7 +59,7 @@
   .years i { display: block; height: 100%; width: 0; background: var(--fg); }
 
   .stage {
-    flex: 1; min-height: 340px; position: relative; border-radius: 10px; overflow: hidden;
+    flex: 1; min-height: 300px; max-height: 62vh; position: relative; border-radius: 10px; overflow: hidden;
     background: var(--room-cold); cursor: pointer; touch-action: none;
     transition: background 0.4s ease;
   }
@@ -79,14 +79,14 @@
   .lines p.lost { opacity: 0.35; }
   .hint { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 0.9rem; color: var(--muted); }
   .hint[hidden] { display: none !important; }
-  .forced { position: absolute; top: 14px; left: 14px; right: 14px; text-align: center; font-weight: 700; color: var(--accent); }
-  .forced[hidden] { display: none !important; }
 
   .pile { display: grid; gap: 6px; }
   .pile .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
   .pile .bar i { display: block; height: 100%; width: 0; background: var(--pile); }
   .pile .chips { display: flex; flex-wrap: wrap; gap: 4px 8px; min-height: 1.5em; font-size: 0.8rem; color: var(--muted); }
-  .pile .label { font-size: 0.75rem; color: var(--muted); }
+  .pile .label { font-size: 0.85rem; display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+  .pile .bar i.down { background: var(--accent); }
+  .pile .bar i { background: var(--fg); }
 
   #sEnd h1 { font-family: var(--font-title); font-weight: 800; font-size: 2rem; letter-spacing: 0.08em; margin: 12px 0 4px; }
   .sum { margin: 0 0 18px; }
@@ -108,9 +108,10 @@
   <section class="screen" id="sTitle">
     <h1 class="title">あと何回</h1>
     <ul class="rules">
-      <li>ハルは3歳から18歳になる。時間は止まらない。</li>
-      <li>ときどき、何かが起きる。「…」が合図。そのあいだ<b>画面を押していれば</b>、ゆっくり最後まで見られる。<b>離していると</b>、すぐに過ぎてしまう。</li>
-      <li>押しているあいだは、やることが溜まっていく。溜まりきると、手を離すしかない。</li>
+      <li><b>目標：ハルが18歳になるまでに、家のローン2,600万円を返し終える。</b></li>
+      <li>画面を<b>離している</b>あいだは、働いている。お金が貯まる。</li>
+      <li>画面を<b>押している</b>あいだは、ハルのそばにいる。そのあいだは稼げず、お金が減っていく。</li>
+      <li>ときどき、ハルとの場面が起きる（「…」が合図）。押していれば最後まで見られる。離していると、すぐに過ぎる。</li>
     </ul>
     <button type="button" class="btn" id="bStart">はじめる</button>
   </section>
@@ -118,19 +119,17 @@
   <section class="screen" id="sPlay" hidden>
     <div class="top"><span class="age" id="age">3歳</span><span class="state" id="state"></span></div>
     <div class="years"><i id="yearsBar"></i></div>
+    <div class="pile">
+      <div class="label"><span>ローン返済</span><span id="money">0 / 2,600万円</span></div>
+      <div class="bar"><i id="moneyBar"></i></div>
+    </div>
     <div class="stage" id="stage" role="button" aria-label="押しているあいだ、ゆっくり見られる">
       <div class="scene">
         <div class="kid" id="kid"></div>
         <div class="bubble" id="bubble">…</div>
       </div>
       <div class="lines" id="lines" aria-live="polite"></div>
-      <div class="hint" id="hint">押してみて</div>
-      <div class="forced" id="forced" hidden></div>
-    </div>
-    <div class="pile">
-      <div class="label">やること</div>
-      <div class="bar"><i id="pileBar"></i></div>
-      <div class="chips" id="chips"></div>
+      <div class="hint" id="hint">「…」が出たら、押してみて</div>
     </div>
   </section>
 
@@ -148,9 +147,9 @@
   const FREE_RATE = 1 / 5;      // years per second while released
   const LINE_SEC = 1.5;         // seconds per line while held
   const FREE_LINE_SEC = 0.22;   // lines rush by while released
-  const PILE_UP = 1 / 7;        // pile fills in 7 s of holding
-  const PILE_DOWN = 1 / 5;      // and drains in 5 s of letting go
-  const FORCED_SEC = 2.4;
+  const GOAL = 2600;            // 万円
+  const EARN_PER_YEAR = 200;    // 万円 per year of working
+  const HOLD_COST = 15;         // 万円 per second spent holding
   const CUE_YEARS = 0.22;
 
   const MOMENTS = [
@@ -175,13 +174,11 @@
     { at: 17.8, kind: "bye", lines: ["k:行ってきます", "大きな荷物。", "ドアが閉まる。"] }
   ];
   const KIND_LABEL = { dakko: "抱っこ", ehon: "絵本", game: "いっしょにゲーム" };
-  const PILE_ITEMS = ["皿洗い", "メール 3件", "洗濯物", "連絡帳", "会議の資料", "電話の折り返し", "明日の弁当", "請求書", "メール 8件"];
-  const FORCED = ["電話が鳴る。出ないわけにいかない。", "「至急」のメールが来た。", "鍋がふきこぼれる。", "上司から着信。"];
 
   const $ = (id) => document.getElementById(id);
   const stage = $("stage");
 
-  let age, holding, pile, forcedLeft, mi, cur, heldSec, running, last, everHeld;
+  let age, holding, money, mi, cur, heldSec, running, last, everHeld;
 
   function kidSVG(a) {
     const t = (a - START) / (END - START);
@@ -205,11 +202,10 @@
   }
 
   function setHold(v) {
-    if (forcedLeft > 0) v = false;
     if (v && !everHeld) { everHeld = true; $("hint").hidden = true; }
     holding = v;
     stage.classList.toggle("held", v);
-    $("state").textContent = v ? "押している" : "";
+    $("state").textContent = v ? "ハルのそばにいる" : "働いている";
     $("state").classList.toggle("on", v);
   }
 
@@ -224,21 +220,9 @@
   }
 
   function update(dt) {
-    if (forcedLeft > 0) {
-      forcedLeft -= dt;
-      if (forcedLeft <= 0) { $("forced").hidden = true; }
-    }
-
-    // the pile: holding costs, letting go pays it back
-    pile += (holding ? PILE_UP : -PILE_DOWN) * dt;
-    pile = Math.max(0, Math.min(1, pile));
-    if (holding && pile >= 1) {
-      forcedLeft = FORCED_SEC;
-      $("forced").textContent = FORCED[Math.floor(Math.random() * FORCED.length)];
-      $("forced").hidden = false;
-      setHold(false);
-    }
-    if (holding) heldSec += dt;
+    // holding = not working: it costs; letting go while years pass earns
+    if (holding) { heldSec += dt; money = Math.max(0, money - HOLD_COST * dt); }
+    else if (!cur) money += EARN_PER_YEAR * FREE_RATE * dt;
 
     // a moment in progress has its own clock
     if (cur) {
@@ -271,9 +255,10 @@
   function render() {
     $("age").textContent = Math.floor(age) + "歳";
     $("yearsBar").style.width = (100 * (age - START) / (END - START)) + "%";
-    $("pileBar").style.width = (pile * 100) + "%";
-    const n = Math.ceil(pile * 6);
-    $("chips").textContent = PILE_ITEMS.slice(0, n).join("　");
+    const mb = $("moneyBar");
+    mb.style.width = Math.min(100, 100 * money / GOAL) + "%";
+    mb.classList.toggle("down", holding);
+    $("money").textContent = Math.floor(money).toLocaleString("ja-JP") + " / " + GOAL.toLocaleString("ja-JP") + "万円";
     drawKid();
   }
 
@@ -336,12 +321,17 @@
     });
     $("sum").innerHTML = "";
     const s1 = document.createElement("div");
-    s1.innerHTML = "15年のうち、止めていられたのは <b></b>。";
-    s1.querySelector("b").textContent = fmtSec(heldSec);
+    const done = money >= GOAL;
+    s1.innerHTML = "ローン：<b></b>";
+    s1.querySelector("b").textContent = done ? "返し終えた。" : "あと " + Math.ceil(GOAL - money).toLocaleString("ja-JP") + "万円 残った。";
+    const s0 = document.createElement("div");
+    s0.className = "muted";
+    s0.textContent = "15年のうち、ハルのそばにいたのは " + fmtSec(heldSec) + "。";
     const s2 = document.createElement("div");
     s2.className = "muted";
     s2.textContent = MOMENTS.length + "回のうち、最後まで見られたのは " + seen + "回。";
     $("sum").appendChild(s1);
+    $("sum").appendChild(s0);
     $("sum").appendChild(s2);
     show("sEnd");
   }
@@ -349,11 +339,10 @@
   function show(id) { ["sTitle", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
 
   function start() {
-    age = START; holding = false; pile = 0; forcedLeft = 0; mi = 0; cur = null; heldSec = 0; everHeld = false;
+    age = START; holding = false; money = 0; mi = 0; cur = null; heldSec = 0; everHeld = false;
     MOMENTS.forEach((m) => { delete m.result; });
     $("lines").innerHTML = "";
     $("hint").hidden = false;
-    $("forced").hidden = true;
     $("bubble").classList.remove("show");
     setHold(false);
     show("sPlay");
