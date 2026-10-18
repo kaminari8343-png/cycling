@@ -257,8 +257,9 @@ function decide(ev, ctx, r, key) {
   const tau = 0.25, mx = Math.max(...opts.map((x) => x.score));
   const ws = opts.map((x) => Math.exp((x.score - mx) / tau)), sum = ws.reduce((p, q) => p + q, 0);
   let u = r(key + "|choice") * sum;
-  for (let j = 0; j < opts.length; j++) { u -= ws[j]; if (u <= 0) return opts[j]; }
-  return opts[opts.length - 1];
+  const avail = opts.map((x) => ({ i: x.i, text: x.o.text }));
+  for (let j = 0; j < opts.length; j++) { u -= ws[j]; if (u <= 0) return { ...opts[j], avail }; }
+  return { ...opts[opts.length - 1], avail };
 }
 
 // ---- one year for one actor ------------------------------------------------------------------
@@ -298,7 +299,7 @@ function yearFor(role, ctx, r, life) {
     });
     if (s.kid || role === "child") life.bond += s.bond;
     if (sign < 0) a.stress += 0.15;
-    happened.push({ id: ev.id, title: ev.title, situation: ev.situation, choice: pick.o.text, choiceIndex: pick.i, top: pick.top, realized });
+    happened.push({ id: ev.id, domain: ev.domain, title: ev.title, situation: ev.situation, choice: pick.o.text, choiceIndex: pick.i, top: pick.top, avail: pick.avail, realized });
   }
   return happened;
 }

@@ -122,6 +122,28 @@
   .endtbl { display: grid; gap: 10px; margin-top: 24px; }
   .endtbl h3 { margin: 0; font-size: 0.85rem; color: var(--muted); }
   .src { font-size: 0.75rem; color: var(--muted); margin-top: 28px; }
+  .readhead { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); padding-block: 6px 12px; z-index: 5; border-bottom: 1px solid var(--line); }
+  .readhead .who { display: flex; justify-content: space-between; gap: 10px; font-size: 0.85rem; color: var(--muted); }
+  .agebig { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .agebig small { font-size: 1rem; margin-left: 4px; }
+  .lifemap { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 2px; margin-top: 8px; max-width: 22rem; }
+  .lifemap i { aspect-ratio: 1; background: var(--line); border-radius: 1px; position: relative; }
+  .lifemap i.on { background: var(--mine); opacity: 0.55; }
+  .lifemap i.now { background: var(--mine); opacity: 1; }
+  .lifemap i.no::after { content: ""; position: absolute; inset: 30%; border-radius: 50%; background: var(--fg); }
+  .log { display: grid; gap: 10px; padding-block: 18px 12px; }
+  .log .y { font-family: var(--font-num); font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+  .log p { margin: 0; }
+  .log .sit { color: var(--muted); font-size: 0.9rem; }
+  .log .act { font-weight: 500; }
+  .log .note { font-weight: 700; }
+  .log .mine { color: var(--orig); }
+  .log .refuse { color: var(--mine); font-weight: 700; }
+  .log .why { color: var(--mine); font-size: 0.85rem; }
+  .ask { background: var(--card); border: 1.5px solid var(--brand); border-radius: 8px; padding: 14px; display: grid; gap: 10px; margin-bottom: 14px; }
+  .ask[hidden] { display: none !important; }
+  .askq { margin: 0; font-weight: 700; }
+  .readctl { margin-top: 8px; }
   .fade { animation: fade 0.35s ease both; }
   @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .fade { animation: none; } .progress i { transition: none; } }
@@ -178,12 +200,48 @@
     </div>
   </section>
 
-  <section class="screen" id="sLife" hidden>
+  <section class="screen" id="sFam" hidden>
     <div class="fam">
       <div class="muted">地球のどこかで、子どもが生まれた。</div>
       <div class="place" id="lPlace"></div>
     </div>
     <div class="facts" id="lFacts"></div>
+    <p class="bridge" id="lInto"></p>
+    <p class="muted" id="lRule"></p>
+    <div class="row-btns"><button type="button" class="btn" id="bRead">人生を始める</button></div>
+  </section>
+
+  <section class="screen" id="sRead" hidden>
+    <div class="readhead">
+      <div class="who"><span id="rdWho"></span><span class="num" id="rdYear"></span></div>
+      <div class="agebig"><span id="rdAge">0</span><small>歳</small></div>
+      <div class="lifemap" id="rdMap"></div>
+    </div>
+    <div class="log" id="rdLog" aria-live="polite"></div>
+    <div class="ask" id="rdAsk" hidden>
+      <p class="askq" id="rdAskQ"></p>
+      <div class="answers" id="rdOpts"></div>
+    </div>
+    <div class="row-btns readctl">
+      <button type="button" class="btn ghost" id="bFast">速く読む</button>
+      <button type="button" class="btn ghost" id="bSkip">最後まで飛ばす</button>
+    </div>
+  </section>
+
+  <section class="screen" id="sEnd" hidden>
+    <div class="card">
+      <div class="band"><b>あと何回</b><span id="eId"></span></div>
+      <div class="body">
+        <div>
+          <div class="you" id="eWhere"></div>
+          <div class="tname" id="eName"></div>
+          <div class="muted" id="eMeta"></div>
+        </div>
+        <div class="tline" id="eMatch"></div>
+        <div id="eSummary"></div>
+        <div class="bridge">あなたの思想が入らなかったら、この家族はどう生きたのか。</div>
+      </div>
+    </div>
     <div class="legend"><span class="o">本来の人生（親のもともとの価値観）</span><span class="m">あなたの思想が入った人生</span><span class="s">どちらも同じ</span></div>
     <div class="tl" id="lTl"></div>
     <div class="endtbl" id="lEnd"></div>
@@ -200,7 +258,7 @@ import { setData, live, pickCountry, nativeValues, center, topValue, VALUES, des
 import { TYPES, OPPOSED, WORD } from "./types.mjs";
 
 const $ = (id) => document.getElementById(id);
-const show = (id) => { for (const s of ["sTitle", "sQuiz", "sResult", "sLife"]) $(s).hidden = s !== id; window.scrollTo(0, 0); };
+const show = (id) => { for (const s of ["sTitle", "sQuiz", "sResult", "sFam", "sRead", "sEnd"]) $(s).hidden = s !== id; window.scrollTo(0, 0); };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ---- questions (docs/questions.md) ------------------------------------------------
@@ -404,8 +462,11 @@ function drawRadar(v) {
 }
 
 // ---- life ---------------------------------------------------------------------------------
-let FAMILY = 0;
+let FAMILY = 0, CUR = null;
 const TIERS = ["", "最も貧しい層", "貧しい層", "真ん中の層", "やや豊かな層", "豊かな層"];
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const whyText = (v) => (v && PLAYER.best[v] ? `あなたの「${PLAYER.best[v].t.replace(/。$/, "")}」に「${SCALE[3 - PLAYER.best[v].a]}」という答えが、そうさせた。` : "");
+
 function runLife() {
   FAMILY++;
   const seed = `fam-${Date.now()}-${FAMILY}`;
@@ -414,16 +475,122 @@ function runLife() {
   const native = nativeValues(r, c, "parentnative");
   const a = live({ seed, country: c, parentValues: native, label: "本来" });
   const b = live({ seed, country: c, parentValues: PLAYER.values, label: "あなた" });
+  CUR = { c, native, a, b, seed };
 
   $("lPlace").textContent = c.nameJa;
   const facts = [
     ["平均寿命", `${c.lifeExpectancy.toFixed(1)}歳`], ["1,000人あたりの乳児の死亡", c.infantMortality != null ? `${c.infantMortality.toFixed(1)}人` : "不明"],
     ["極度の貧困の割合", `${c.poverty.toFixed(1)}%${c.povertyEstimated ? "（推定）" : ""}`], ["この家族の所得", TIERS[a.tier]],
-    ["親", `${a.parent.name}（${a.rows[0].parentAge}歳）`], ["子", a.kid.name],
-    ["本来の親の価値観", TYPES[topValue(native)].name], ["あなたの思想", TYPES[PLAYER.top].name + (PLAYER.sub ? ` ── ${PLAYER.sub}` : "")]
+    ["親", `${a.parent.name}（${a.rows[0].parentAge}歳）`], ["子", a.kid.name]
   ];
   $("lFacts").innerHTML = facts.map(([k, v]) => `<div><small>${k}</small><b>${esc(v)}</b></div>`).join("");
+  $("lInto").textContent = `あなたの思想は、${a.parent.name}に入った。${a.parent.name}はこれから、あなたが答えたとおりに生きる。`;
+  $("lRule").textContent = `ときどき、あなたも選べる。ただし、${a.parent.name}が言うことを聞くとは限らない。`;
+  show("sFam");
+}
 
+// Which of the parent's decisions to put to the player: the ones about family first, spaced out.
+function askable(e) { return e.avail && e.avail.length >= 2 && ["children", "family", "elders", "work", "money", "home"].includes(e.domain); }
+
+let SPEED = 1, SKIP = false;
+async function read() {
+  const { b } = CUR;
+  const P = b.parent.name, K = b.kid.name;
+  show("sRead");
+  SPEED = 1; SKIP = false;
+  $("bFast").textContent = "速く読む";
+  const log = $("rdLog");
+  log.innerHTML = "";
+  $("rdWho").textContent = `${CUR.c.nameJa}・${P}と${K}`;
+  const map = $("rdMap");
+  map.innerHTML = "";
+  const years = b.rows.length;
+  for (let i = 0; i < Math.max(years, 20); i++) map.appendChild(document.createElement("i"));
+  const cells = [...map.children];
+  const startYear = 2026;
+  let lastAsk = -10, asked = 0, matched = 0;
+  CUR.asks = [];
+
+  const say = async (html, cls) => {
+    const p = document.createElement("p");
+    if (cls) p.className = cls;
+    p.innerHTML = html;
+    p.classList.add("fade");
+    log.appendChild(p);
+    if (!SKIP) { p.scrollIntoView({ block: "end", behavior: "smooth" }); await wait(900 / SPEED); }
+  };
+
+  for (let i = 0; i < b.rows.length; i++) {
+    const row = b.rows[i];
+    $("rdAge").textContent = row.kidAge;
+    $("rdYear").textContent = `${startYear + i}年`;
+    cells.forEach((c, j) => { c.classList.toggle("on", j < i); c.classList.toggle("now", j === i); });
+    if (!row.notes.length && !row.parent.length && !row.kid.length) { if (!SKIP) await wait(250 / SPEED); continue; }
+    await say(`${K} ${row.kidAge}歳`, "y");
+    for (const n of row.notes) await say(esc(n), "note");
+    for (const e of row.parent) {
+      await say(`${esc(e.title)}。${esc(e.situation)}`, "sit");
+      const doAsk = !SKIP && askable(e) && i - lastAsk >= 3 && asked < 8;
+      if (doAsk) {
+        lastAsk = i; asked++;
+        const pick = await ask(`あなたなら、どうする？`, e.avail);
+        const same = pick.i === e.choiceIndex;
+        if (same) matched++; else cells[i].classList.add("no");
+        CUR.asks.push({ age: row.kidAge, title: e.title, mine: pick.text, theirs: e.choice, same });
+        await say(`あなたは「${esc(pick.text)}」を選んだ。`, "mine");
+        if (same) await say(`${esc(P)}は、そうした。`, "act");
+        else {
+          await say(`${esc(P)}は、そうしなかった。${esc(P)}は「${esc(e.choice)}」を選んだ。`, "refuse");
+          const w = whyText(e.top);
+          if (w) await say(`── ${esc(w)}`, "why");
+        }
+      } else {
+        await say(`${esc(P)}は「${esc(e.choice)}」を選んだ。`, "act");
+      }
+      if (e.realized.length) await say(esc(e.realized.join("。")) + "。");
+    }
+    for (const e of row.kid) {
+      await say(`${esc(e.title)}。${esc(e.situation)}`, "sit");
+      await say(`${esc(K)}は「${esc(e.choice)}」を選んだ。`, "act");
+      if (e.realized.length) await say(esc(e.realized.join("。")) + "。");
+    }
+  }
+  CUR.asked = asked; CUR.matched = matched;
+  await wait(SKIP ? 0 : 1200);
+  finishLife();
+}
+
+function ask(q, avail) {
+  return new Promise((res) => {
+    $("rdAskQ").textContent = q;
+    const box = $("rdOpts");
+    box.innerHTML = "";
+    for (const o of avail) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "ans"; b.textContent = o.text;
+      b.onclick = () => { $("rdAsk").hidden = true; res(o); };
+      box.appendChild(b);
+    }
+    $("rdAsk").hidden = false;
+    $("rdAsk").scrollIntoView({ block: "center", behavior: "smooth" });
+  });
+}
+
+function finishLife() {
+  const { c, a, b, native } = CUR;
+  $("eId").textContent = CUR.seed.slice(-10).toUpperCase();
+  $("eWhere").textContent = `${c.nameJa}・${TIERS[b.tier]}`;
+  $("eName").textContent = `${b.parent.name}と${b.kid.name}`;
+  $("eMeta").textContent = `あなたの思想：${TYPES[PLAYER.top].name}${PLAYER.sub ? ` ── ${PLAYER.sub}` : ""}　本来の${b.parent.name}：${TYPES[topValue(native)].name}`;
+  $("eMatch").textContent = CUR.asked
+    ? `あなたが選んだ道を、${b.parent.name}が選んだのは、${CUR.asked}回のうち${CUR.matched}回だった。`
+    : `${b.parent.name}は、あなたの思想どおりに生きた。`;
+  $("eSummary").innerHTML = cellHtml("m", "あなたの思想が入った人生の終わり", describeEnd(b));
+  renderCompare(a, b);
+  show("sEnd");
+}
+
+function renderCompare(a, b) {
   const tl = $("lTl");
   tl.innerHTML = "";
   let quotes = 0;
@@ -433,19 +600,15 @@ function runLife() {
     const ta = lines(ra), tb = lines(rb);
     if (!ta.length && !tb.length) continue;
     const row = document.createElement("div");
-    row.className = "yr fade";
+    row.className = "yr";
     const age = (ra || rb).kidAge;
     let html = `<div class="age">${esc(a.kid.name)}<br>${age}歳</div><div class="cells">`;
-    if (ta.join() === tb.join()) {
-      html += cellHtml("s", "どちらも", ta);
-    } else {
+    if (ta.join() === tb.join()) html += cellHtml("s", "どちらも", ta);
+    else {
       let why = "";
       if (rb && quotes < 4) {
         const d = rb.parent.find((e) => { const o = ra && ra.parent.find((x) => x.id === e.id); return !o || o.choiceIndex !== e.choiceIndex; });
-        if (d && d.top && PLAYER.best[d.top]) {
-          why = `あなたの「${PLAYER.best[d.top].t.replace(/。$/, "")}」に「${SCALE[3 - PLAYER.best[d.top].a]}」という答えが、この親にそうさせた。`;
-          quotes++;
-        }
+        if (d && d.top && PLAYER.best[d.top]) { why = whyText(d.top); quotes++; }
       }
       if (ta.length) html += cellHtml("o", "本来の人生", ta);
       if (tb.length) html += cellHtml("m", "あなたの思想が入った人生", tb, why);
@@ -453,11 +616,8 @@ function runLife() {
     row.innerHTML = html + "</div>";
     tl.appendChild(row);
   }
-
-  const ea = describeEnd(a), eb = describeEnd(b);
-  $("lEnd").innerHTML = `<h3>終わり</h3>` + cellHtml("o", "本来の人生", ea) + cellHtml("m", "あなたの思想が入った人生", eb);
+  $("lEnd").innerHTML = `<h3>終わり</h3>` + cellHtml("o", "本来の人生", describeEnd(a)) + cellHtml("m", "あなたの思想が入った人生", describeEnd(b));
   $("lSrc").textContent = "統計：世界銀行 世界開発指標（datahub.io の写し）、Our World in Data。確率や価値の重みは試作の仮の値。本来の親の価値観は、世界価値観調査のデータを入れるまでの仮の作り方。";
-  show("sLife");
 }
 function lines(row) {
   if (!row) return [];
@@ -476,5 +636,8 @@ setData(events, countries);
 $("bStart").onclick = () => { qi = 0; answers = {}; renderQ(); show("sQuiz"); };
 $("bLive").onclick = runLife;
 $("bAgain").onclick = runLife;
+$("bRead").onclick = read;
+$("bFast").onclick = () => { SPEED = SPEED === 1 ? 4 : 1; $("bFast").textContent = SPEED === 1 ? "速く読む" : "ふつうに読む"; };
+$("bSkip").onclick = () => { SKIP = true; };
 $("bResult").onclick = () => show("sResult");
 </script>
