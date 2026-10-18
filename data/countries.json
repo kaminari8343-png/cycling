@@ -1,0 +1,1686 @@
+{
+ "meta": {
+  "source": "Our World in Data, covid-19-data/public/data/latest/owid-covid-latest.csv (raw.githubusercontent.com)",
+  "fields": {
+   "population": "UN World Population Prospects (via OWID)",
+   "lifeExpectancy": "UN WPP (via OWID)",
+   "extremePoverty": "World Bank, share living on less than the international poverty line (via OWID)",
+   "gdpPerCapita": "World Bank (via OWID)",
+   "medianAge": "UN WPP (via OWID)",
+   "hdi": "UNDP Human Development Index (via OWID)"
+  },
+  "note": "Snapshot used while the World Bank API is not reachable from the build environment. Values are as published in that file; some are a few years old."
+ },
+ "countries": [
+  {
+   "iso": "AFG",
+   "name": "Afghanistan",
+   "population": 41128772.0,
+   "lifeExpectancy": 64.83,
+   "extremePoverty": null,
+   "gdpPerCapita": 1803.987,
+   "medianAge": 18.6,
+   "hdi": 0.511
+  },
+  {
+   "iso": "ALB",
+   "name": "Albania",
+   "population": 2842318.0,
+   "lifeExpectancy": 78.57,
+   "extremePoverty": 1.1,
+   "gdpPerCapita": 11803.431,
+   "medianAge": 38.0,
+   "hdi": 0.795
+  },
+  {
+   "iso": "DZA",
+   "name": "Algeria",
+   "population": 44903228.0,
+   "lifeExpectancy": 76.88,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 13913.839,
+   "medianAge": 29.1,
+   "hdi": 0.748
+  },
+  {
+   "iso": "AGO",
+   "name": "Angola",
+   "population": 35588996.0,
+   "lifeExpectancy": 61.15,
+   "extremePoverty": null,
+   "gdpPerCapita": 5819.495,
+   "medianAge": 16.8,
+   "hdi": 0.581
+  },
+  {
+   "iso": "ARG",
+   "name": "Argentina",
+   "population": 45510324.0,
+   "lifeExpectancy": 76.67,
+   "extremePoverty": 0.6,
+   "gdpPerCapita": 18933.907,
+   "medianAge": 31.9,
+   "hdi": 0.845
+  },
+  {
+   "iso": "ARM",
+   "name": "Armenia",
+   "population": 2780472.0,
+   "lifeExpectancy": 75.09,
+   "extremePoverty": 1.8,
+   "gdpPerCapita": 8787.58,
+   "medianAge": 35.7,
+   "hdi": 0.776
+  },
+  {
+   "iso": "AUS",
+   "name": "Australia",
+   "population": 26177410.0,
+   "lifeExpectancy": 83.44,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 44648.71,
+   "medianAge": 37.9,
+   "hdi": 0.944
+  },
+  {
+   "iso": "AUT",
+   "name": "Austria",
+   "population": 8939617.0,
+   "lifeExpectancy": 81.54,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 45436.686,
+   "medianAge": 44.4,
+   "hdi": 0.922
+  },
+  {
+   "iso": "AZE",
+   "name": "Azerbaijan",
+   "population": 10358078.0,
+   "lifeExpectancy": 73.0,
+   "extremePoverty": null,
+   "gdpPerCapita": 15847.419,
+   "medianAge": 32.4,
+   "hdi": 0.756
+  },
+  {
+   "iso": "BHR",
+   "name": "Bahrain",
+   "population": 1472237.0,
+   "lifeExpectancy": 77.29,
+   "extremePoverty": null,
+   "gdpPerCapita": 43290.705,
+   "medianAge": 32.4,
+   "hdi": 0.852
+  },
+  {
+   "iso": "BGD",
+   "name": "Bangladesh",
+   "population": 171186368.0,
+   "lifeExpectancy": 72.59,
+   "extremePoverty": 14.8,
+   "gdpPerCapita": 3523.984,
+   "medianAge": 27.5,
+   "hdi": 0.632
+  },
+  {
+   "iso": "BLR",
+   "name": "Belarus",
+   "population": 9534956.0,
+   "lifeExpectancy": 74.79,
+   "extremePoverty": null,
+   "gdpPerCapita": 17167.967,
+   "medianAge": 40.3,
+   "hdi": 0.823
+  },
+  {
+   "iso": "BEL",
+   "name": "Belgium",
+   "population": 11655923.0,
+   "lifeExpectancy": 81.63,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 42658.576,
+   "medianAge": 41.8,
+   "hdi": 0.931
+  },
+  {
+   "iso": "BEN",
+   "name": "Benin",
+   "population": 13352864.0,
+   "lifeExpectancy": 61.77,
+   "extremePoverty": 49.6,
+   "gdpPerCapita": 2064.236,
+   "medianAge": 18.8,
+   "hdi": 0.545
+  },
+  {
+   "iso": "BTN",
+   "name": "Bhutan",
+   "population": 782457.0,
+   "lifeExpectancy": 71.78,
+   "extremePoverty": 1.5,
+   "gdpPerCapita": 8708.597,
+   "medianAge": 28.6,
+   "hdi": 0.654
+  },
+  {
+   "iso": "BOL",
+   "name": "Bolivia",
+   "population": 12224114.0,
+   "lifeExpectancy": 71.51,
+   "extremePoverty": 7.1,
+   "gdpPerCapita": 6885.829,
+   "medianAge": 25.4,
+   "hdi": 0.718
+  },
+  {
+   "iso": "BIH",
+   "name": "Bosnia and Herzegovina",
+   "population": 3233530.0,
+   "lifeExpectancy": 77.4,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 11713.895,
+   "medianAge": 42.5,
+   "hdi": 0.78
+  },
+  {
+   "iso": "BWA",
+   "name": "Botswana",
+   "population": 2630300.0,
+   "lifeExpectancy": 69.59,
+   "extremePoverty": null,
+   "gdpPerCapita": 15807.374,
+   "medianAge": 25.8,
+   "hdi": 0.735
+  },
+  {
+   "iso": "BRA",
+   "name": "Brazil",
+   "population": 215313504.0,
+   "lifeExpectancy": 75.88,
+   "extremePoverty": 3.4,
+   "gdpPerCapita": 14103.452,
+   "medianAge": 33.5,
+   "hdi": 0.765
+  },
+  {
+   "iso": "BGR",
+   "name": "Bulgaria",
+   "population": 6781955.0,
+   "lifeExpectancy": 75.05,
+   "extremePoverty": 1.5,
+   "gdpPerCapita": 18563.307,
+   "medianAge": 44.7,
+   "hdi": 0.816
+  },
+  {
+   "iso": "BFA",
+   "name": "Burkina Faso",
+   "population": 22673764.0,
+   "lifeExpectancy": 61.58,
+   "extremePoverty": 43.7,
+   "gdpPerCapita": 1703.102,
+   "medianAge": 17.6,
+   "hdi": 0.452
+  },
+  {
+   "iso": "BDI",
+   "name": "Burundi",
+   "population": 12889583.0,
+   "lifeExpectancy": 61.58,
+   "extremePoverty": 71.7,
+   "gdpPerCapita": 702.225,
+   "medianAge": 17.5,
+   "hdi": 0.433
+  },
+  {
+   "iso": "KHM",
+   "name": "Cambodia",
+   "population": 16767851.0,
+   "lifeExpectancy": 69.82,
+   "extremePoverty": null,
+   "gdpPerCapita": 3645.07,
+   "medianAge": 25.6,
+   "hdi": 0.594
+  },
+  {
+   "iso": "CMR",
+   "name": "Cameroon",
+   "population": 27914542.0,
+   "lifeExpectancy": 59.29,
+   "extremePoverty": 23.8,
+   "gdpPerCapita": 3364.926,
+   "medianAge": 18.8,
+   "hdi": 0.563
+  },
+  {
+   "iso": "CAN",
+   "name": "Canada",
+   "population": 38454328.0,
+   "lifeExpectancy": 82.43,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 44017.591,
+   "medianAge": 41.4,
+   "hdi": 0.929
+  },
+  {
+   "iso": "CPV",
+   "name": "Cape Verde",
+   "population": 593162.0,
+   "lifeExpectancy": 72.98,
+   "extremePoverty": null,
+   "gdpPerCapita": 6222.554,
+   "medianAge": 25.7,
+   "hdi": 0.665
+  },
+  {
+   "iso": "CAF",
+   "name": "Central African Republic",
+   "population": 5579148.0,
+   "lifeExpectancy": 53.28,
+   "extremePoverty": null,
+   "gdpPerCapita": 661.24,
+   "medianAge": 18.3,
+   "hdi": 0.397
+  },
+  {
+   "iso": "TCD",
+   "name": "Chad",
+   "population": 17723312.0,
+   "lifeExpectancy": 54.24,
+   "extremePoverty": 38.4,
+   "gdpPerCapita": 1768.153,
+   "medianAge": 16.7,
+   "hdi": 0.398
+  },
+  {
+   "iso": "CHL",
+   "name": "Chile",
+   "population": 19603736.0,
+   "lifeExpectancy": 80.18,
+   "extremePoverty": 1.3,
+   "gdpPerCapita": 22767.037,
+   "medianAge": 35.4,
+   "hdi": 0.851
+  },
+  {
+   "iso": "CHN",
+   "name": "China",
+   "population": 1425887360.0,
+   "lifeExpectancy": 76.91,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 15308.712,
+   "medianAge": 38.7,
+   "hdi": 0.761
+  },
+  {
+   "iso": "COL",
+   "name": "Colombia",
+   "population": 51874028.0,
+   "lifeExpectancy": 77.29,
+   "extremePoverty": 4.5,
+   "gdpPerCapita": 13254.949,
+   "medianAge": 32.2,
+   "hdi": 0.767
+  },
+  {
+   "iso": "COM",
+   "name": "Comoros",
+   "population": 836783.0,
+   "lifeExpectancy": 64.32,
+   "extremePoverty": 18.1,
+   "gdpPerCapita": 1413.89,
+   "medianAge": 20.4,
+   "hdi": 0.554
+  },
+  {
+   "iso": "COG",
+   "name": "Congo",
+   "population": 5970430.0,
+   "lifeExpectancy": 64.57,
+   "extremePoverty": 37.0,
+   "gdpPerCapita": 4881.406,
+   "medianAge": 19.0,
+   "hdi": 0.574
+  },
+  {
+   "iso": "CRI",
+   "name": "Costa Rica",
+   "population": 5180836.0,
+   "lifeExpectancy": 80.28,
+   "extremePoverty": 1.3,
+   "gdpPerCapita": 15524.995,
+   "medianAge": 33.6,
+   "hdi": 0.81
+  },
+  {
+   "iso": "CIV",
+   "name": "Cote d'Ivoire",
+   "population": 28160548.0,
+   "lifeExpectancy": 57.78,
+   "extremePoverty": 28.2,
+   "gdpPerCapita": 3601.006,
+   "medianAge": 18.7,
+   "hdi": 0.538
+  },
+  {
+   "iso": "HRV",
+   "name": "Croatia",
+   "population": 4030361.0,
+   "lifeExpectancy": 78.49,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 22669.797,
+   "medianAge": 44.0,
+   "hdi": 0.851
+  },
+  {
+   "iso": "CUB",
+   "name": "Cuba",
+   "population": 11212198.0,
+   "lifeExpectancy": 78.8,
+   "extremePoverty": null,
+   "gdpPerCapita": null,
+   "medianAge": 43.1,
+   "hdi": 0.783
+  },
+  {
+   "iso": "CYP",
+   "name": "Cyprus",
+   "population": 896007.0,
+   "lifeExpectancy": 80.98,
+   "extremePoverty": null,
+   "gdpPerCapita": 32415.132,
+   "medianAge": 37.3,
+   "hdi": 0.887
+  },
+  {
+   "iso": "CZE",
+   "name": "Czechia",
+   "population": 10493990.0,
+   "lifeExpectancy": 79.38,
+   "extremePoverty": null,
+   "gdpPerCapita": 32605.906,
+   "medianAge": 43.3,
+   "hdi": 0.9
+  },
+  {
+   "iso": "COD",
+   "name": "Democratic Republic of Congo",
+   "population": 99010216.0,
+   "lifeExpectancy": 60.68,
+   "extremePoverty": 77.1,
+   "gdpPerCapita": 808.133,
+   "medianAge": 17.0,
+   "hdi": 0.48
+  },
+  {
+   "iso": "DNK",
+   "name": "Denmark",
+   "population": 5882259.0,
+   "lifeExpectancy": 80.9,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 46682.515,
+   "medianAge": 42.3,
+   "hdi": 0.94
+  },
+  {
+   "iso": "DJI",
+   "name": "Djibouti",
+   "population": 1120851.0,
+   "lifeExpectancy": 67.11,
+   "extremePoverty": 22.5,
+   "gdpPerCapita": 2705.406,
+   "medianAge": 25.4,
+   "hdi": 0.524
+  },
+  {
+   "iso": "DOM",
+   "name": "Dominican Republic",
+   "population": 11228821.0,
+   "lifeExpectancy": 74.08,
+   "extremePoverty": 1.6,
+   "gdpPerCapita": 14600.861,
+   "medianAge": 27.6,
+   "hdi": 0.756
+  },
+  {
+   "iso": "TLS",
+   "name": "East Timor",
+   "population": 1341298.0,
+   "lifeExpectancy": 69.5,
+   "extremePoverty": 30.3,
+   "gdpPerCapita": 6570.102,
+   "medianAge": 18.0,
+   "hdi": 0.606
+  },
+  {
+   "iso": "ECU",
+   "name": "Ecuador",
+   "population": 18001002.0,
+   "lifeExpectancy": 77.01,
+   "extremePoverty": 3.6,
+   "gdpPerCapita": 10581.936,
+   "medianAge": 28.1,
+   "hdi": 0.759
+  },
+  {
+   "iso": "EGY",
+   "name": "Egypt",
+   "population": 110990096.0,
+   "lifeExpectancy": 71.99,
+   "extremePoverty": 1.3,
+   "gdpPerCapita": 10550.206,
+   "medianAge": 25.3,
+   "hdi": 0.707
+  },
+  {
+   "iso": "SLV",
+   "name": "El Salvador",
+   "population": 6336393.0,
+   "lifeExpectancy": 73.32,
+   "extremePoverty": 2.2,
+   "gdpPerCapita": 7292.458,
+   "medianAge": 27.6,
+   "hdi": 0.673
+  },
+  {
+   "iso": "GNQ",
+   "name": "Equatorial Guinea",
+   "population": 1674916.0,
+   "lifeExpectancy": 58.74,
+   "extremePoverty": null,
+   "gdpPerCapita": 22604.873,
+   "medianAge": 22.4,
+   "hdi": 0.592
+  },
+  {
+   "iso": "ERI",
+   "name": "Eritrea",
+   "population": 3684041.0,
+   "lifeExpectancy": 66.32,
+   "extremePoverty": null,
+   "gdpPerCapita": 1510.459,
+   "medianAge": 19.3,
+   "hdi": 0.459
+  },
+  {
+   "iso": "EST",
+   "name": "Estonia",
+   "population": 1326064.0,
+   "lifeExpectancy": 78.74,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 29481.252,
+   "medianAge": 42.7,
+   "hdi": 0.892
+  },
+  {
+   "iso": "SWZ",
+   "name": "Eswatini",
+   "population": 1201680.0,
+   "lifeExpectancy": 60.19,
+   "extremePoverty": null,
+   "gdpPerCapita": 7738.975,
+   "medianAge": 21.5,
+   "hdi": 0.611
+  },
+  {
+   "iso": "ETH",
+   "name": "Ethiopia",
+   "population": 123379928.0,
+   "lifeExpectancy": 66.6,
+   "extremePoverty": 26.7,
+   "gdpPerCapita": 1729.927,
+   "medianAge": 19.8,
+   "hdi": 0.485
+  },
+  {
+   "iso": "FJI",
+   "name": "Fiji",
+   "population": 929769.0,
+   "lifeExpectancy": 67.44,
+   "extremePoverty": 1.4,
+   "gdpPerCapita": 8702.975,
+   "medianAge": 28.6,
+   "hdi": 0.743
+  },
+  {
+   "iso": "FIN",
+   "name": "Finland",
+   "population": 5540745.0,
+   "lifeExpectancy": 81.91,
+   "extremePoverty": null,
+   "gdpPerCapita": 40585.721,
+   "medianAge": 42.8,
+   "hdi": 0.938
+  },
+  {
+   "iso": "FRA",
+   "name": "France",
+   "population": 67813000.0,
+   "lifeExpectancy": 82.66,
+   "extremePoverty": null,
+   "gdpPerCapita": 38605.671,
+   "medianAge": 42.0,
+   "hdi": 0.901
+  },
+  {
+   "iso": "GAB",
+   "name": "Gabon",
+   "population": 2388997.0,
+   "lifeExpectancy": 66.47,
+   "extremePoverty": 3.4,
+   "gdpPerCapita": 16562.413,
+   "medianAge": 23.1,
+   "hdi": 0.703
+  },
+  {
+   "iso": "GMB",
+   "name": "Gambia",
+   "population": 2705995.0,
+   "lifeExpectancy": 62.05,
+   "extremePoverty": 10.1,
+   "gdpPerCapita": 1561.767,
+   "medianAge": 17.5,
+   "hdi": 0.496
+  },
+  {
+   "iso": "GEO",
+   "name": "Georgia",
+   "population": 3744385.0,
+   "lifeExpectancy": 73.77,
+   "extremePoverty": 4.2,
+   "gdpPerCapita": 9745.079,
+   "medianAge": 38.7,
+   "hdi": 0.812
+  },
+  {
+   "iso": "DEU",
+   "name": "Germany",
+   "population": 83369840.0,
+   "lifeExpectancy": 81.33,
+   "extremePoverty": null,
+   "gdpPerCapita": 45229.245,
+   "medianAge": 46.6,
+   "hdi": 0.947
+  },
+  {
+   "iso": "GHA",
+   "name": "Ghana",
+   "population": 33475870.0,
+   "lifeExpectancy": 64.07,
+   "extremePoverty": 12.0,
+   "gdpPerCapita": 4227.63,
+   "medianAge": 21.1,
+   "hdi": 0.611
+  },
+  {
+   "iso": "GRC",
+   "name": "Greece",
+   "population": 10384972.0,
+   "lifeExpectancy": 82.24,
+   "extremePoverty": 1.5,
+   "gdpPerCapita": 24574.382,
+   "medianAge": 45.3,
+   "hdi": 0.888
+  },
+  {
+   "iso": "GTM",
+   "name": "Guatemala",
+   "population": 17843914.0,
+   "lifeExpectancy": 74.3,
+   "extremePoverty": 8.7,
+   "gdpPerCapita": 7423.808,
+   "medianAge": 22.9,
+   "hdi": 0.663
+  },
+  {
+   "iso": "GIN",
+   "name": "Guinea",
+   "population": 13859349.0,
+   "lifeExpectancy": 61.6,
+   "extremePoverty": 35.3,
+   "gdpPerCapita": 1998.926,
+   "medianAge": 19.0,
+   "hdi": 0.477
+  },
+  {
+   "iso": "GNB",
+   "name": "Guinea-Bissau",
+   "population": 2105580.0,
+   "lifeExpectancy": 58.32,
+   "extremePoverty": 67.1,
+   "gdpPerCapita": 1548.675,
+   "medianAge": 19.4,
+   "hdi": 0.48
+  },
+  {
+   "iso": "GUY",
+   "name": "Guyana",
+   "population": 808727.0,
+   "lifeExpectancy": 69.91,
+   "extremePoverty": null,
+   "gdpPerCapita": 7435.047,
+   "medianAge": 26.3,
+   "hdi": 0.682
+  },
+  {
+   "iso": "HTI",
+   "name": "Haiti",
+   "population": 11585003.0,
+   "lifeExpectancy": 64.0,
+   "extremePoverty": 23.5,
+   "gdpPerCapita": 1653.173,
+   "medianAge": 24.3,
+   "hdi": 0.51
+  },
+  {
+   "iso": "HND",
+   "name": "Honduras",
+   "population": 10432858.0,
+   "lifeExpectancy": 75.27,
+   "extremePoverty": 16.0,
+   "gdpPerCapita": 4541.795,
+   "medianAge": 24.9,
+   "hdi": 0.634
+  },
+  {
+   "iso": "HKG",
+   "name": "Hong Kong",
+   "population": 7488863.0,
+   "lifeExpectancy": 84.86,
+   "extremePoverty": null,
+   "gdpPerCapita": 56054.92,
+   "medianAge": 44.8,
+   "hdi": 0.949
+  },
+  {
+   "iso": "HUN",
+   "name": "Hungary",
+   "population": 9967304.0,
+   "lifeExpectancy": 76.88,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 26777.561,
+   "medianAge": 43.4,
+   "hdi": 0.854
+  },
+  {
+   "iso": "IND",
+   "name": "India",
+   "population": 1417173120.0,
+   "lifeExpectancy": 69.66,
+   "extremePoverty": 21.2,
+   "gdpPerCapita": 6426.674,
+   "medianAge": 28.2,
+   "hdi": 0.645
+  },
+  {
+   "iso": "IDN",
+   "name": "Indonesia",
+   "population": 275501344.0,
+   "lifeExpectancy": 71.72,
+   "extremePoverty": 5.7,
+   "gdpPerCapita": 11188.744,
+   "medianAge": 29.3,
+   "hdi": 0.718
+  },
+  {
+   "iso": "IRN",
+   "name": "Iran",
+   "population": 88550568.0,
+   "lifeExpectancy": 76.68,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 19082.62,
+   "medianAge": 32.4,
+   "hdi": 0.783
+  },
+  {
+   "iso": "IRQ",
+   "name": "Iraq",
+   "population": 44496124.0,
+   "lifeExpectancy": 70.6,
+   "extremePoverty": 2.5,
+   "gdpPerCapita": 15663.986,
+   "medianAge": 20.0,
+   "hdi": 0.674
+  },
+  {
+   "iso": "IRL",
+   "name": "Ireland",
+   "population": 5023108.0,
+   "lifeExpectancy": 82.3,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 67335.293,
+   "medianAge": 38.7,
+   "hdi": 0.955
+  },
+  {
+   "iso": "ISR",
+   "name": "Israel",
+   "population": 9449000.0,
+   "lifeExpectancy": 82.97,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 33132.32,
+   "medianAge": 30.6,
+   "hdi": 0.919
+  },
+  {
+   "iso": "ITA",
+   "name": "Italy",
+   "population": 59037472.0,
+   "lifeExpectancy": 83.51,
+   "extremePoverty": 2.0,
+   "gdpPerCapita": 35220.084,
+   "medianAge": 47.9,
+   "hdi": 0.892
+  },
+  {
+   "iso": "JAM",
+   "name": "Jamaica",
+   "population": 2827382.0,
+   "lifeExpectancy": 74.47,
+   "extremePoverty": null,
+   "gdpPerCapita": 8193.571,
+   "medianAge": 31.4,
+   "hdi": 0.734
+  },
+  {
+   "iso": "JPN",
+   "name": "Japan",
+   "population": 123951696.0,
+   "lifeExpectancy": 84.63,
+   "extremePoverty": null,
+   "gdpPerCapita": 39002.223,
+   "medianAge": 48.2,
+   "hdi": 0.919
+  },
+  {
+   "iso": "JOR",
+   "name": "Jordan",
+   "population": 11285875.0,
+   "lifeExpectancy": 74.53,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 8337.49,
+   "medianAge": 23.2,
+   "hdi": 0.729
+  },
+  {
+   "iso": "KAZ",
+   "name": "Kazakhstan",
+   "population": 19397998.0,
+   "lifeExpectancy": 73.6,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 24055.588,
+   "medianAge": 30.6,
+   "hdi": 0.825
+  },
+  {
+   "iso": "KEN",
+   "name": "Kenya",
+   "population": 54027484.0,
+   "lifeExpectancy": 66.7,
+   "extremePoverty": 36.8,
+   "gdpPerCapita": 2993.028,
+   "medianAge": 20.0,
+   "hdi": 0.601
+  },
+  {
+   "iso": "KWT",
+   "name": "Kuwait",
+   "population": 4268886.0,
+   "lifeExpectancy": 75.49,
+   "extremePoverty": null,
+   "gdpPerCapita": 65530.537,
+   "medianAge": 33.7,
+   "hdi": 0.806
+  },
+  {
+   "iso": "KGZ",
+   "name": "Kyrgyzstan",
+   "population": 6630621.0,
+   "lifeExpectancy": 71.45,
+   "extremePoverty": 1.4,
+   "gdpPerCapita": 3393.474,
+   "medianAge": 26.3,
+   "hdi": 0.697
+  },
+  {
+   "iso": "LAO",
+   "name": "Laos",
+   "population": 7529477.0,
+   "lifeExpectancy": 67.92,
+   "extremePoverty": 22.7,
+   "gdpPerCapita": 6397.36,
+   "medianAge": 24.4,
+   "hdi": 0.613
+  },
+  {
+   "iso": "LVA",
+   "name": "Latvia",
+   "population": 1850654.0,
+   "lifeExpectancy": 75.29,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 25063.846,
+   "medianAge": 43.9,
+   "hdi": 0.866
+  },
+  {
+   "iso": "LBN",
+   "name": "Lebanon",
+   "population": 5489744.0,
+   "lifeExpectancy": 78.93,
+   "extremePoverty": null,
+   "gdpPerCapita": 13367.565,
+   "medianAge": 31.1,
+   "hdi": 0.744
+  },
+  {
+   "iso": "LSO",
+   "name": "Lesotho",
+   "population": 2305826.0,
+   "lifeExpectancy": 54.33,
+   "extremePoverty": 59.6,
+   "gdpPerCapita": 2851.153,
+   "medianAge": 22.2,
+   "hdi": 0.527
+  },
+  {
+   "iso": "LBR",
+   "name": "Liberia",
+   "population": 5302690.0,
+   "lifeExpectancy": 64.1,
+   "extremePoverty": 38.6,
+   "gdpPerCapita": 752.788,
+   "medianAge": 19.2,
+   "hdi": 0.48
+  },
+  {
+   "iso": "LBY",
+   "name": "Libya",
+   "population": 6812344.0,
+   "lifeExpectancy": 72.91,
+   "extremePoverty": null,
+   "gdpPerCapita": 17881.509,
+   "medianAge": 29.0,
+   "hdi": 0.724
+  },
+  {
+   "iso": "LTU",
+   "name": "Lithuania",
+   "population": 2750058.0,
+   "lifeExpectancy": 75.93,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 29524.265,
+   "medianAge": 43.5,
+   "hdi": 0.882
+  },
+  {
+   "iso": "LUX",
+   "name": "Luxembourg",
+   "population": 647601.0,
+   "lifeExpectancy": 82.25,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 94277.965,
+   "medianAge": 39.7,
+   "hdi": 0.916
+  },
+  {
+   "iso": "MDG",
+   "name": "Madagascar",
+   "population": 29611718.0,
+   "lifeExpectancy": 67.04,
+   "extremePoverty": 77.6,
+   "gdpPerCapita": 1416.44,
+   "medianAge": 19.6,
+   "hdi": 0.528
+  },
+  {
+   "iso": "MWI",
+   "name": "Malawi",
+   "population": 20405318.0,
+   "lifeExpectancy": 64.26,
+   "extremePoverty": 71.4,
+   "gdpPerCapita": 1095.042,
+   "medianAge": 18.1,
+   "hdi": 0.483
+  },
+  {
+   "iso": "MYS",
+   "name": "Malaysia",
+   "population": 33938216.0,
+   "lifeExpectancy": 76.16,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 26808.164,
+   "medianAge": 29.9,
+   "hdi": 0.81
+  },
+  {
+   "iso": "MDV",
+   "name": "Maldives",
+   "population": 523798.0,
+   "lifeExpectancy": 78.92,
+   "extremePoverty": null,
+   "gdpPerCapita": 15183.616,
+   "medianAge": 30.6,
+   "hdi": 0.74
+  },
+  {
+   "iso": "MLI",
+   "name": "Mali",
+   "population": 22593598.0,
+   "lifeExpectancy": 59.31,
+   "extremePoverty": null,
+   "gdpPerCapita": 2014.306,
+   "medianAge": 16.4,
+   "hdi": 0.434
+  },
+  {
+   "iso": "MLT",
+   "name": "Malta",
+   "population": 533293.0,
+   "lifeExpectancy": 82.53,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 36513.323,
+   "medianAge": 42.4,
+   "hdi": 0.895
+  },
+  {
+   "iso": "MRT",
+   "name": "Mauritania",
+   "population": 4736146.0,
+   "lifeExpectancy": 64.92,
+   "extremePoverty": 6.0,
+   "gdpPerCapita": 3597.633,
+   "medianAge": 20.3,
+   "hdi": 0.546
+  },
+  {
+   "iso": "MUS",
+   "name": "Mauritius",
+   "population": 1299478.0,
+   "lifeExpectancy": 74.99,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 20292.745,
+   "medianAge": 37.4,
+   "hdi": 0.804
+  },
+  {
+   "iso": "MEX",
+   "name": "Mexico",
+   "population": 127504120.0,
+   "lifeExpectancy": 75.05,
+   "extremePoverty": 2.5,
+   "gdpPerCapita": 17336.469,
+   "medianAge": 29.3,
+   "hdi": 0.779
+  },
+  {
+   "iso": "MDA",
+   "name": "Moldova",
+   "population": 3272993.0,
+   "lifeExpectancy": 71.9,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 5189.972,
+   "medianAge": 37.6,
+   "hdi": 0.75
+  },
+  {
+   "iso": "MNG",
+   "name": "Mongolia",
+   "population": 3398373.0,
+   "lifeExpectancy": 69.87,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 11840.846,
+   "medianAge": 28.6,
+   "hdi": 0.737
+  },
+  {
+   "iso": "MNE",
+   "name": "Montenegro",
+   "population": 627082.0,
+   "lifeExpectancy": 76.88,
+   "extremePoverty": 1.0,
+   "gdpPerCapita": 16409.288,
+   "medianAge": 39.1,
+   "hdi": 0.829
+  },
+  {
+   "iso": "MAR",
+   "name": "Morocco",
+   "population": 37457976.0,
+   "lifeExpectancy": 76.68,
+   "extremePoverty": 1.0,
+   "gdpPerCapita": 7485.013,
+   "medianAge": 29.6,
+   "hdi": 0.686
+  },
+  {
+   "iso": "MOZ",
+   "name": "Mozambique",
+   "population": 32969520.0,
+   "lifeExpectancy": 60.85,
+   "extremePoverty": 62.9,
+   "gdpPerCapita": 1136.103,
+   "medianAge": 17.7,
+   "hdi": 0.456
+  },
+  {
+   "iso": "MMR",
+   "name": "Myanmar",
+   "population": 54179312.0,
+   "lifeExpectancy": 67.13,
+   "extremePoverty": 6.4,
+   "gdpPerCapita": 5591.597,
+   "medianAge": 29.1,
+   "hdi": 0.583
+  },
+  {
+   "iso": "NAM",
+   "name": "Namibia",
+   "population": 2567024.0,
+   "lifeExpectancy": 63.71,
+   "extremePoverty": 13.4,
+   "gdpPerCapita": 9541.808,
+   "medianAge": 22.0,
+   "hdi": 0.646
+  },
+  {
+   "iso": "NPL",
+   "name": "Nepal",
+   "population": 30547586.0,
+   "lifeExpectancy": 70.78,
+   "extremePoverty": 15.0,
+   "gdpPerCapita": 2442.804,
+   "medianAge": 25.0,
+   "hdi": 0.602
+  },
+  {
+   "iso": "NLD",
+   "name": "Netherlands",
+   "population": 17564020.0,
+   "lifeExpectancy": 82.28,
+   "extremePoverty": null,
+   "gdpPerCapita": 48472.545,
+   "medianAge": 43.2,
+   "hdi": 0.944
+  },
+  {
+   "iso": "NZL",
+   "name": "New Zealand",
+   "population": 5185289.0,
+   "lifeExpectancy": 82.29,
+   "extremePoverty": null,
+   "gdpPerCapita": 36085.843,
+   "medianAge": 37.9,
+   "hdi": 0.931
+  },
+  {
+   "iso": "NIC",
+   "name": "Nicaragua",
+   "population": 6948395.0,
+   "lifeExpectancy": 74.48,
+   "extremePoverty": 3.2,
+   "gdpPerCapita": 5321.444,
+   "medianAge": 27.3,
+   "hdi": 0.66
+  },
+  {
+   "iso": "NER",
+   "name": "Niger",
+   "population": 26207982.0,
+   "lifeExpectancy": 62.42,
+   "extremePoverty": 44.5,
+   "gdpPerCapita": 926.0,
+   "medianAge": 15.1,
+   "hdi": 0.394
+  },
+  {
+   "iso": "NGA",
+   "name": "Nigeria",
+   "population": 218541216.0,
+   "lifeExpectancy": 54.69,
+   "extremePoverty": null,
+   "gdpPerCapita": 5338.454,
+   "medianAge": 18.1,
+   "hdi": 0.539
+  },
+  {
+   "iso": "MKD",
+   "name": "North Macedonia",
+   "population": 2093606.0,
+   "lifeExpectancy": 75.8,
+   "extremePoverty": 5.0,
+   "gdpPerCapita": 13111.214,
+   "medianAge": 39.1,
+   "hdi": 0.774
+  },
+  {
+   "iso": "NOR",
+   "name": "Norway",
+   "population": 5434324.0,
+   "lifeExpectancy": 82.4,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 64800.057,
+   "medianAge": 39.7,
+   "hdi": 0.957
+  },
+  {
+   "iso": "OMN",
+   "name": "Oman",
+   "population": 4576300.0,
+   "lifeExpectancy": 77.86,
+   "extremePoverty": null,
+   "gdpPerCapita": 37960.709,
+   "medianAge": 30.7,
+   "hdi": 0.813
+  },
+  {
+   "iso": "PAK",
+   "name": "Pakistan",
+   "population": 235824864.0,
+   "lifeExpectancy": 67.27,
+   "extremePoverty": 4.0,
+   "gdpPerCapita": 5034.708,
+   "medianAge": 23.5,
+   "hdi": 0.557
+  },
+  {
+   "iso": "PSE",
+   "name": "Palestine",
+   "population": 5250076.0,
+   "lifeExpectancy": 74.05,
+   "extremePoverty": 1.0,
+   "gdpPerCapita": 4449.898,
+   "medianAge": 20.4,
+   "hdi": 0.708
+  },
+  {
+   "iso": "PAN",
+   "name": "Panama",
+   "population": 4408582.0,
+   "lifeExpectancy": 78.51,
+   "extremePoverty": 2.2,
+   "gdpPerCapita": 22267.037,
+   "medianAge": 29.7,
+   "hdi": 0.815
+  },
+  {
+   "iso": "PNG",
+   "name": "Papua New Guinea",
+   "population": 10142625.0,
+   "lifeExpectancy": 64.5,
+   "extremePoverty": null,
+   "gdpPerCapita": 3823.194,
+   "medianAge": 22.6,
+   "hdi": 0.555
+  },
+  {
+   "iso": "PRY",
+   "name": "Paraguay",
+   "population": 6780745.0,
+   "lifeExpectancy": 74.25,
+   "extremePoverty": 1.7,
+   "gdpPerCapita": 8827.01,
+   "medianAge": 26.5,
+   "hdi": 0.728
+  },
+  {
+   "iso": "PER",
+   "name": "Peru",
+   "population": 34049588.0,
+   "lifeExpectancy": 76.74,
+   "extremePoverty": 3.5,
+   "gdpPerCapita": 12236.706,
+   "medianAge": 29.1,
+   "hdi": 0.777
+  },
+  {
+   "iso": "PHL",
+   "name": "Philippines",
+   "population": 115559008.0,
+   "lifeExpectancy": 71.23,
+   "extremePoverty": null,
+   "gdpPerCapita": 7599.188,
+   "medianAge": 25.2,
+   "hdi": 0.718
+  },
+  {
+   "iso": "POL",
+   "name": "Poland",
+   "population": 39857144.0,
+   "lifeExpectancy": 78.73,
+   "extremePoverty": null,
+   "gdpPerCapita": 27216.445,
+   "medianAge": 41.8,
+   "hdi": 0.88
+  },
+  {
+   "iso": "PRT",
+   "name": "Portugal",
+   "population": 10270857.0,
+   "lifeExpectancy": 82.05,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 27936.896,
+   "medianAge": 46.2,
+   "hdi": 0.864
+  },
+  {
+   "iso": "QAT",
+   "name": "Qatar",
+   "population": 2695131.0,
+   "lifeExpectancy": 80.23,
+   "extremePoverty": null,
+   "gdpPerCapita": 116935.6,
+   "medianAge": 31.9,
+   "hdi": 0.848
+  },
+  {
+   "iso": "ROU",
+   "name": "Romania",
+   "population": 19659270.0,
+   "lifeExpectancy": 76.05,
+   "extremePoverty": 5.7,
+   "gdpPerCapita": 23313.199,
+   "medianAge": 43.0,
+   "hdi": 0.828
+  },
+  {
+   "iso": "RUS",
+   "name": "Russia",
+   "population": 144713312.0,
+   "lifeExpectancy": 72.58,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 24765.954,
+   "medianAge": 39.6,
+   "hdi": 0.824
+  },
+  {
+   "iso": "RWA",
+   "name": "Rwanda",
+   "population": 13776702.0,
+   "lifeExpectancy": 69.02,
+   "extremePoverty": 56.0,
+   "gdpPerCapita": 1854.211,
+   "medianAge": 20.3,
+   "hdi": 0.543
+  },
+  {
+   "iso": "SAU",
+   "name": "Saudi Arabia",
+   "population": 36408824.0,
+   "lifeExpectancy": 75.13,
+   "extremePoverty": null,
+   "gdpPerCapita": 49045.411,
+   "medianAge": 31.9,
+   "hdi": 0.854
+  },
+  {
+   "iso": "SEN",
+   "name": "Senegal",
+   "population": 17316452.0,
+   "lifeExpectancy": 67.94,
+   "extremePoverty": 38.0,
+   "gdpPerCapita": 2470.58,
+   "medianAge": 18.7,
+   "hdi": 0.512
+  },
+  {
+   "iso": "SRB",
+   "name": "Serbia",
+   "population": 6871547.0,
+   "lifeExpectancy": 76.0,
+   "extremePoverty": null,
+   "gdpPerCapita": 14048.881,
+   "medianAge": 41.2,
+   "hdi": 0.806
+  },
+  {
+   "iso": "SLE",
+   "name": "Sierra Leone",
+   "population": 8605723.0,
+   "lifeExpectancy": 54.7,
+   "extremePoverty": 52.2,
+   "gdpPerCapita": 1390.3,
+   "medianAge": 19.1,
+   "hdi": 0.452
+  },
+  {
+   "iso": "SGP",
+   "name": "Singapore",
+   "population": 5637022.0,
+   "lifeExpectancy": 83.62,
+   "extremePoverty": null,
+   "gdpPerCapita": 85535.383,
+   "medianAge": 42.4,
+   "hdi": 0.938
+  },
+  {
+   "iso": "SVK",
+   "name": "Slovakia",
+   "population": 5643455.0,
+   "lifeExpectancy": 77.54,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 30155.152,
+   "medianAge": 41.2,
+   "hdi": 0.86
+  },
+  {
+   "iso": "SVN",
+   "name": "Slovenia",
+   "population": 2119843.0,
+   "lifeExpectancy": 81.32,
+   "extremePoverty": null,
+   "gdpPerCapita": 31400.84,
+   "medianAge": 44.5,
+   "hdi": 0.917
+  },
+  {
+   "iso": "SLB",
+   "name": "Solomon Islands",
+   "population": 724272.0,
+   "lifeExpectancy": 73.0,
+   "extremePoverty": 25.1,
+   "gdpPerCapita": 2205.923,
+   "medianAge": 20.8,
+   "hdi": 0.567
+  },
+  {
+   "iso": "ZAF",
+   "name": "South Africa",
+   "population": 59893884.0,
+   "lifeExpectancy": 64.13,
+   "extremePoverty": 18.9,
+   "gdpPerCapita": 12294.876,
+   "medianAge": 27.3,
+   "hdi": 0.709
+  },
+  {
+   "iso": "KOR",
+   "name": "South Korea",
+   "population": 51815808.0,
+   "lifeExpectancy": 83.03,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 35938.374,
+   "medianAge": 43.4,
+   "hdi": 0.916
+  },
+  {
+   "iso": "SSD",
+   "name": "South Sudan",
+   "population": 10913172.0,
+   "lifeExpectancy": 57.85,
+   "extremePoverty": null,
+   "gdpPerCapita": 1569.888,
+   "medianAge": 19.2,
+   "hdi": 0.433
+  },
+  {
+   "iso": "ESP",
+   "name": "Spain",
+   "population": 47558632.0,
+   "lifeExpectancy": 83.56,
+   "extremePoverty": 1.0,
+   "gdpPerCapita": 34272.36,
+   "medianAge": 45.5,
+   "hdi": 0.904
+  },
+  {
+   "iso": "LKA",
+   "name": "Sri Lanka",
+   "population": 21832150.0,
+   "lifeExpectancy": 76.98,
+   "extremePoverty": 0.7,
+   "gdpPerCapita": 11669.077,
+   "medianAge": 34.1,
+   "hdi": 0.782
+  },
+  {
+   "iso": "SDN",
+   "name": "Sudan",
+   "population": 46874200.0,
+   "lifeExpectancy": 65.31,
+   "extremePoverty": null,
+   "gdpPerCapita": 4466.507,
+   "medianAge": 19.7,
+   "hdi": 0.51
+  },
+  {
+   "iso": "SUR",
+   "name": "Suriname",
+   "population": 618046.0,
+   "lifeExpectancy": 71.68,
+   "extremePoverty": null,
+   "gdpPerCapita": 13767.119,
+   "medianAge": 29.6,
+   "hdi": 0.738
+  },
+  {
+   "iso": "SWE",
+   "name": "Sweden",
+   "population": 10549349.0,
+   "lifeExpectancy": 82.8,
+   "extremePoverty": 0.5,
+   "gdpPerCapita": 46949.283,
+   "medianAge": 41.0,
+   "hdi": 0.945
+  },
+  {
+   "iso": "CHE",
+   "name": "Switzerland",
+   "population": 8740471.0,
+   "lifeExpectancy": 83.78,
+   "extremePoverty": null,
+   "gdpPerCapita": 57410.166,
+   "medianAge": 43.1,
+   "hdi": 0.955
+  },
+  {
+   "iso": "SYR",
+   "name": "Syria",
+   "population": 22125242.0,
+   "lifeExpectancy": 72.7,
+   "extremePoverty": null,
+   "gdpPerCapita": null,
+   "medianAge": 21.7,
+   "hdi": 0.567
+  },
+  {
+   "iso": "TJK",
+   "name": "Tajikistan",
+   "population": 9952789.0,
+   "lifeExpectancy": 71.1,
+   "extremePoverty": 4.8,
+   "gdpPerCapita": 2896.913,
+   "medianAge": 23.3,
+   "hdi": 0.668
+  },
+  {
+   "iso": "TZA",
+   "name": "Tanzania",
+   "population": 65497752.0,
+   "lifeExpectancy": 65.46,
+   "extremePoverty": 49.1,
+   "gdpPerCapita": 2683.304,
+   "medianAge": 17.7,
+   "hdi": 0.529
+  },
+  {
+   "iso": "THA",
+   "name": "Thailand",
+   "population": 71697024.0,
+   "lifeExpectancy": 77.15,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 16277.671,
+   "medianAge": 40.1,
+   "hdi": 0.777
+  },
+  {
+   "iso": "TGO",
+   "name": "Togo",
+   "population": 8848700.0,
+   "lifeExpectancy": 61.04,
+   "extremePoverty": 49.2,
+   "gdpPerCapita": 1429.813,
+   "medianAge": 19.4,
+   "hdi": 0.515
+  },
+  {
+   "iso": "TTO",
+   "name": "Trinidad and Tobago",
+   "population": 1531043.0,
+   "lifeExpectancy": 73.51,
+   "extremePoverty": null,
+   "gdpPerCapita": 28763.071,
+   "medianAge": 36.2,
+   "hdi": 0.796
+  },
+  {
+   "iso": "TUN",
+   "name": "Tunisia",
+   "population": 12356116.0,
+   "lifeExpectancy": 76.7,
+   "extremePoverty": 2.0,
+   "gdpPerCapita": 10849.297,
+   "medianAge": 32.7,
+   "hdi": 0.74
+  },
+  {
+   "iso": "TUR",
+   "name": "Turkey",
+   "population": 85341248.0,
+   "lifeExpectancy": 77.69,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 25129.341,
+   "medianAge": 31.6,
+   "hdi": 0.82
+  },
+  {
+   "iso": "TKM",
+   "name": "Turkmenistan",
+   "population": 6430777.0,
+   "lifeExpectancy": 68.19,
+   "extremePoverty": null,
+   "gdpPerCapita": 16389.023,
+   "medianAge": 26.9,
+   "hdi": 0.715
+  },
+  {
+   "iso": "UGA",
+   "name": "Uganda",
+   "population": 47249588.0,
+   "lifeExpectancy": 63.37,
+   "extremePoverty": 41.6,
+   "gdpPerCapita": 1697.707,
+   "medianAge": 16.4,
+   "hdi": 0.544
+  },
+  {
+   "iso": "UKR",
+   "name": "Ukraine",
+   "population": 39701744.0,
+   "lifeExpectancy": 72.06,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 7894.393,
+   "medianAge": 41.4,
+   "hdi": 0.779
+  },
+  {
+   "iso": "ARE",
+   "name": "United Arab Emirates",
+   "population": 9441138.0,
+   "lifeExpectancy": 77.97,
+   "extremePoverty": null,
+   "gdpPerCapita": 67293.483,
+   "medianAge": 34.0,
+   "hdi": 0.89
+  },
+  {
+   "iso": "GBR",
+   "name": "United Kingdom",
+   "population": 67508936.0,
+   "lifeExpectancy": 81.32,
+   "extremePoverty": 0.2,
+   "gdpPerCapita": 39753.244,
+   "medianAge": 40.8,
+   "hdi": 0.932
+  },
+  {
+   "iso": "USA",
+   "name": "United States",
+   "population": 338289856.0,
+   "lifeExpectancy": 78.86,
+   "extremePoverty": 1.2,
+   "gdpPerCapita": 54225.446,
+   "medianAge": 38.3,
+   "hdi": 0.926
+  },
+  {
+   "iso": "URY",
+   "name": "Uruguay",
+   "population": 3422796.0,
+   "lifeExpectancy": 77.91,
+   "extremePoverty": 0.1,
+   "gdpPerCapita": 20551.409,
+   "medianAge": 35.6,
+   "hdi": 0.817
+  },
+  {
+   "iso": "UZB",
+   "name": "Uzbekistan",
+   "population": 34627648.0,
+   "lifeExpectancy": 71.72,
+   "extremePoverty": null,
+   "gdpPerCapita": 6253.104,
+   "medianAge": 28.2,
+   "hdi": 0.72
+  },
+  {
+   "iso": "VEN",
+   "name": "Venezuela",
+   "population": 28301700.0,
+   "lifeExpectancy": 72.06,
+   "extremePoverty": null,
+   "gdpPerCapita": 16745.022,
+   "medianAge": 29.0,
+   "hdi": 0.711
+  },
+  {
+   "iso": "VNM",
+   "name": "Vietnam",
+   "population": 98186856.0,
+   "lifeExpectancy": 75.4,
+   "extremePoverty": 2.0,
+   "gdpPerCapita": 6171.884,
+   "medianAge": 32.6,
+   "hdi": 0.704
+  },
+  {
+   "iso": "YEM",
+   "name": "Yemen",
+   "population": 33696612.0,
+   "lifeExpectancy": 66.12,
+   "extremePoverty": 18.8,
+   "gdpPerCapita": 1479.147,
+   "medianAge": 20.3,
+   "hdi": 0.47
+  },
+  {
+   "iso": "ZMB",
+   "name": "Zambia",
+   "population": 20017670.0,
+   "lifeExpectancy": 63.89,
+   "extremePoverty": 57.5,
+   "gdpPerCapita": 3689.251,
+   "medianAge": 17.7,
+   "hdi": 0.584
+  },
+  {
+   "iso": "ZWE",
+   "name": "Zimbabwe",
+   "population": 16320539.0,
+   "lifeExpectancy": 61.49,
+   "extremePoverty": 21.4,
+   "gdpPerCapita": 1899.775,
+   "medianAge": 19.6,
+   "hdi": 0.571
+  }
+ ]
+}
