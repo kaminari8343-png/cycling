@@ -1,5 +1,6 @@
 // Runs both lives for a family and prints them side by side as markdown.
 // usage: node sim/run.mjs [seed] [profile]   (profile: dictator | keeper | heretic)
+import "./load.mjs";
 import { live, pickCountry, nativeValues, center, topValue, TYPE_NAMES, QUOTES, describeEnd, VALUES } from "./engine.mjs";
 
 export const PROFILES = {

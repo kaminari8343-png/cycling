@@ -1,13 +1,18 @@
 // Simulates one family twice from the same seed: once with the parent's own values,
 // once with the player's values. Only the parent's values differ; every random draw
 // is keyed by (seed, who, age, event), so both lives see the same luck.
-import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const EVENTS = JSON.parse(readFileSync(join(root, "sim", "events.json"), "utf8"));
-const DATA = JSON.parse(readFileSync(join(root, "data", "countries.json"), "utf8"));
+// Data is handed in with setData(), so the same code runs under node and in the browser.
+let EVENTS = [];
+let DATA = { countries: [] };
+let fit = () => 0;
+export function setData(events, data) {
+  EVENTS = events;
+  DATA = data;
+  const known = DATA.countries.filter((c) => c.extremePoverty != null);
+  const n = known.length, mx = known.reduce((s, c) => s + c.hdi, 0) / n, my = known.reduce((s, c) => s + c.extremePoverty, 0) / n;
+  const b = known.reduce((s, c) => s + (c.hdi - mx) * (c.extremePoverty - my), 0) / known.reduce((s, c) => s + (c.hdi - mx) ** 2, 0);
+  fit = (hdi) => Math.max(0, Math.min(90, my + b * (hdi - mx))); // poverty ~ hdi, only to fill gaps
+}
 
 export const VALUES = ["自律", "刺激", "快楽", "達成", "権力", "安全", "同調", "伝統", "慈善", "普遍"];
 const GROWTH = new Set(["自律", "刺激", "快楽", "慈善", "普遍"]);
@@ -39,17 +44,12 @@ const gaussFrom = (r, key) => {
 };
 
 // ---- country ------------------------------------------------------------------
-const known = DATA.countries.filter((c) => c.extremePoverty != null);
-const fit = (() => { // poverty ~ hdi, only to fill gaps
-  const n = known.length, mx = known.reduce((s, c) => s + c.hdi, 0) / n, my = known.reduce((s, c) => s + c.extremePoverty, 0) / n;
-  const b = known.reduce((s, c) => s + (c.hdi - mx) * (c.extremePoverty - my), 0) / known.reduce((s, c) => s + (c.hdi - mx) ** 2, 0);
-  return (hdi) => Math.max(0, Math.min(90, my + b * (hdi - mx)));
-})();
-
+// Weighted by births, so the odds of being born somewhere match the world's births.
 export function pickCountry(r) {
-  const total = DATA.countries.reduce((s, c) => s + c.population, 0);
+  const w = (c) => c.births || c.population / 50;
+  const total = DATA.countries.reduce((s, c) => s + w(c), 0);
   let x = r("country") * total;
-  for (const c of DATA.countries) { x -= c.population; if (x <= 0) return withPoverty(c); }
+  for (const c of DATA.countries) { x -= w(c); if (x <= 0) return withPoverty(c); }
   return withPoverty(DATA.countries[0]);
 }
 export function countryByIso(iso) { return withPoverty(DATA.countries.find((c) => c.iso === iso)); }
@@ -73,7 +73,8 @@ const withPoverty = (c) => ({ ...c, nameJa: JA[c.iso] || c.name, poverty: c.extr
 function pickTier(r, c) {
   if (r("tier") < c.poverty / 100) return 1;
   const s = Math.max(0, Math.min(1, (c.hdi - 0.4) / 0.55));
-  const w = [0.55 - 0.45 * s, 0.3 + 0.1 * s, 0.12 + 0.23 * s, 0.03 + 0.12 * s];
+  const g = c.gini ? Math.max(0, Math.min(1, (c.gini - 25) / 30)) : 0.5; // more unequal: more mass at the ends
+  const w = [0.55 - 0.45 * s + 0.1 * g, 0.3 + 0.1 * s - 0.05 * g, 0.12 + 0.23 * s - 0.05 * g, 0.03 + 0.12 * s + 0.05 * g];
   let x = r("tier2") * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < 4; i++) { x -= w[i]; if (x <= 0) return i + 2; }
   return 5;
@@ -177,17 +178,31 @@ function check(cond, ctx) {
 }
 
 // ---- likelihood --------------------------------------------------------------------------
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 function likelihood(ev, ctx) {
-  const t = ev.likely, a = ctx.actor, hard = 0.4 + (1 - ctx.c.hdi) * 2.4;
+  const t = ev.likely, a = ctx.actor, c = ctx.c, hard = 0.4 + (1 - c.hdi) * 2.4;
+  const stat = (v, ref) => (v == null ? hard : clamp(v / ref, 0.2, 4));
   let m = 1;
+  // indicators we have: use them, and drop those keywords from the HDI fallback below
+  let rest = t;
+  const use = (re, f) => { if (re.test(rest)) { m *= f(); rest = rest.replace(re, ""); } };
+  use(/失業率/, () => stat(c.unemployment, 6));
+  use(/乳幼児死亡率/, () => stat(c.infantMortality, 25));
+  use(/妊産婦死亡率|施設分娩/, () => stat(c.maternalMortality, 150));
+  use(/インフレ/, () => stat(c.inflation, 6));
+  use(/治安/, () => stat(c.homicide, 6));
+  use(/児童労働/, () => (c.childLabor != null ? stat(c.childLabor, 10) : stat(100 - (c.secondaryEnrollment ?? 70), 30)));
+  use(/紛争|戦闘|難民/, () => stat(c.refugeesOrigin != null ? (1000 * c.refugeesOrigin) / c.population : null, 2));
+  use(/移住|出稼ぎ|移民/, () => clamp(1 + Math.max(0, -(1000 * (c.netMigration || 0)) / c.population) / 2 + (c.remittancesPctGdp || 0) / 5, 0.3, 4));
+  use(/都市化/, () => clamp((100 - (c.urban ?? 50)) / 50, 0.2, 2));
+  use(/農業で働く人/, () => clamp((c.agriculture ?? 30) / 30, 0.1, 3));
   if (/まれに/.test(t)) m *= 0.3;
   if (/毎年少しずつ/.test(t)) m *= 3;
   if (/所得の層が低い|所得の層が最も低い/.test(t)) m *= [0, 1.8, 1.4, 1, 0.7, 0.5][a.tier];
   if (/所得の層が中〜高|所得の層が中ほど|財産/.test(t)) m *= [0, 0.4, 0.7, 1, 1.3, 1.6][a.tier];
-  if (/紛争|戦闘|汚職|差別|飢饉|干ばつ|洪水|児童|乳幼児|妊産婦|インフレ|治安|不安定|権利が弱い|労働災害|食料不安|法の目|感染症|地震/.test(t)) m *= hard;
-  if (/普及|整った|整い方|制度/.test(t)) m *= 0.4 + ctx.c.hdi;
-  if (/高齢化|年を取るほど|平均寿命/.test(t)) m *= a.age > 60 ? 2 : a.age > 45 ? 1.2 : 0.6;
-  if (/移住|出稼ぎ|移民/.test(t)) m *= ctx.c.hdi < 0.75 ? 1.4 : 0.7;
+  if (/汚職|差別|飢饉|干ばつ|洪水|児童婚|不安定|権利が弱い|労働災害|食料不安|法の目|感染症|地震/.test(rest)) m *= hard;
+  if (/普及|整った|整い方|制度/.test(rest)) m *= 0.4 + c.hdi;
+  if (/高齢化|年を取るほど|平均寿命/.test(rest)) m *= a.age > 60 ? 2 : a.age > 45 ? 1.2 : 0.6;
   return m;
 }
 
@@ -289,10 +304,12 @@ function yearFor(role, ctx, r, life) {
 }
 
 // ---- dying ---------------------------------------------------------------------------------------
-function hazard(age, le, tier) {
+function hazard(age, le, tier, c) {
   const B = 0.085, A = B * Math.exp(-B * (le + 0.577 / B));
   let h = A * Math.exp(B * age);
-  if (age === 0) h += Math.max(0.002, (85 - le) * 0.0025);
+  // infant and child mortality from the country's own figures
+  if (age === 0) h += (c.infantMortality ?? Math.max(2, (85 - le) * 2.5)) / 1000;
+  else if (age <= 4 && c.under5Mortality != null && c.infantMortality != null) h += Math.max(0, c.under5Mortality - c.infantMortality) / 1000 / 4;
   return Math.min(1, h * [1, 1.4, 1.15, 1, 0.9, 0.75][tier]);
 }
 
@@ -303,7 +320,7 @@ export function live({ seed, country, parentValues, label }) {
   const names = namesFor(c);
   const tier = pickTier(r, c);
   const parentAge = 20 + Math.floor(r("pAge") * 15);
-  const job = r("job") < Math.max(0.05, 0.75 - c.hdi * 0.8) ? "farm" : r("job2") < 0.25 ? "self" : "employee";
+  const job = r("job") < (c.agriculture ?? 30) / 100 ? "farm" : r("job2") < 0.25 ? "self" : "employee";
   const parent = person({ role: "parent", name: names[0], age: parentAge, tier, job, values: parentValues, siblings: Math.floor(r("sib") * 4),
     kin: r("kin") < 0.8, married: r("mar") < 0.85, kids: 1 });
   const grand = person({ role: "grand", age: parentAge + 22 + Math.floor(r("gAge") * 12), alive: true, flags: {} });
@@ -316,13 +333,13 @@ export function live({ seed, country, parentValues, label }) {
   for (let year = 0; year <= 70; year++) {
     const row = { year: c ? year : year, kidAge: kid.age, parentAge: parent.age, parent: [], kid: [], notes: [] };
     // deaths first, with the same luck in both lives; poorer tiers face higher hazard
-    if (parent.alive && r(`death|parent|${parent.age}`) < hazard(parent.age, c.lifeExpectancy, parent.tier) * (1.6 - parent.health * 0.6)) {
+    if (parent.alive && r(`death|parent|${parent.age}`) < hazard(parent.age, c.lifeExpectancy, parent.tier, c) * (1.6 - parent.health * 0.6)) {
       parent.alive = false;
       life.parentDiedChildAge = kid.age;
       const last = life.lastTogether;
       row.notes.push(`${parent.name}が${parent.age}歳で亡くなる。` + (kid.alive && last != null && last < kid.age ? `${kid.name}と最後に会ったのは、${kid.name}が${last}歳のときだった。` : ""));
     }
-    if (kid.alive && r(`death|kid|${kid.age}`) < hazard(kid.age, c.lifeExpectancy, kid.tier) * (1.6 - kid.health * 0.6)) {
+    if (kid.alive && r(`death|kid|${kid.age}`) < hazard(kid.age, c.lifeExpectancy, kid.tier, c) * (1.6 - kid.health * 0.6)) {
       kid.alive = false;
       row.notes.push(`${kid.name}が${kid.age}歳で亡くなる。`);
     }
@@ -338,7 +355,9 @@ export function live({ seed, country, parentValues, label }) {
     // the child grows up
     if (kid.alive && kid.age < 18) {
       if (kid.age >= 6 && !kid.schoolStopped && kid.edu < 1) kid.edu = 1;
-      if (kid.age >= 12 && !kid.schoolStopped && kid.edu < 2 && r(`edu2|${kid.age}`) < 0.15 + 0.12 * parent.tier) kid.edu = 2;
+      // secondary school: the country's enrollment, shifted by the family's tier
+      const enrol = Math.min(1, (c.secondaryEnrollment ?? 70) / 100) * [0, 0.55, 0.8, 1, 1.1, 1.2][parent.tier];
+      if (kid.age === 12 && !kid.schoolStopped && kid.edu < 2 && r(`edu2|${kid.age}`) < enrol) kid.edu = 2;
     }
     if (kid.alive && kid.age === 18) {
       formChildValues(life, r);
