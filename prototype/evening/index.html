@@ -1,0 +1,365 @@
+<title>あと何回</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@700;800&family=Klee+One:wght@600&display=swap">
+<style>
+  /* Layout: one screen. Age + years bar on top, a lit room with the child in the middle (the hold target), the loan bar under the age. */
+  :root {
+    --bg: #f1eee8;
+    --room: #f7efe0;
+    --room-cold: #dfe3e6;
+    --fg: #27302d;
+    --muted: #707a76;
+    --line: #d6d1c7;
+    --kid: #3a5a8c;
+    --accent: #b5532f;
+    --pile: #b5532f;
+    --card: #fbf9f5;
+    --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    --font-title: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-kid: "Klee One", "Hiragino Maru Gothic ProN", "Zen Kaku Gothic New", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161a19; --room: #2a2620; --room-cold: #1d2225; --fg: #e3e6e2; --muted: #95a09b; --line: #34393a;
+      --kid: #a9bfe6; --accent: #e08a62; --pile: #e08a62; --card: #1f2422; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161a19; --room: #2a2620; --room-cold: #1d2225; --fg: #e3e6e2; --muted: #95a09b; --line: #34393a;
+    --kid: #a9bfe6; --accent: #e08a62; --pile: #e08a62; --card: #1f2422; color-scheme: dark;
+  }
+
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .wrap {
+    max-width: 30rem; margin: 0 auto; min-height: 100%;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 16px 24px;
+    display: flex; flex-direction: column;
+  }
+  .screen[hidden] { display: none !important; }
+  .muted { color: var(--muted); }
+  .btn { font: inherit; font-weight: 700; font-size: 1.02rem; padding: 12px 26px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+  .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  .title { font-family: var(--font-title); font-weight: 800; font-size: 2.6rem; letter-spacing: 0.1em; margin: 14vh 0 14px; }
+  .rules { display: grid; gap: 6px; margin: 0 0 26px; padding: 0; list-style: none; }
+  .rules b { color: var(--accent); }
+
+  #sPlay { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  #sPlay[hidden] { display: none !important; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .top .age { font-family: var(--font-title); font-weight: 800; font-size: 1.7rem; font-variant-numeric: tabular-nums; }
+  .top .state { font-size: 0.85rem; color: var(--muted); }
+  .top .state.on { color: var(--accent); font-weight: 700; }
+  .years { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .years i { display: block; height: 100%; width: 0; background: var(--fg); }
+
+  .stage {
+    flex: 1; min-height: 300px; max-height: 62vh; position: relative; border-radius: 10px; overflow: hidden;
+    background: var(--room-cold); cursor: pointer; touch-action: none;
+    transition: background 0.4s ease;
+  }
+  .stage.held { background: var(--room); }
+  .stage .scene { position: absolute; inset: 0; transition: filter 0.25s ease; }
+  .stage:not(.held) .scene { filter: blur(2.5px) saturate(0.5); }
+  .kid { position: absolute; left: 50%; bottom: 34%; transform: translateX(-50%); transform-origin: 50% 100%; }
+  .kid svg { display: block; overflow: visible; }
+  .bubble {
+    position: absolute; left: 50%; bottom: calc(34% + var(--h, 120px) + 10px); transform: translateX(-50%);
+    font-family: var(--font-kid); color: var(--kid); font-size: 1.4rem; opacity: 0; transition: opacity 0.3s;
+  }
+  .bubble.show { opacity: 1; }
+  .lines { position: absolute; left: 16px; right: 16px; bottom: 16px; display: grid; gap: 2px; min-height: 5.2em; align-content: end; }
+  .lines p { margin: 0; font-size: 1rem; }
+  .lines p.k { font-family: var(--font-kid); color: var(--kid); font-size: 1.12rem; }
+  .lines p.lost { opacity: 0.35; }
+  .hint { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-size: 0.9rem; color: var(--muted); }
+  .hint[hidden] { display: none !important; }
+
+  .pile { display: grid; gap: 6px; }
+  .pile .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .pile .bar i { display: block; height: 100%; width: 0; background: var(--pile); }
+  .pile .chips { display: flex; flex-wrap: wrap; gap: 4px 8px; min-height: 1.5em; font-size: 0.8rem; color: var(--muted); }
+  .pile .label { font-size: 0.85rem; display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+  .pile .bar i.down { background: var(--accent); }
+  .pile .bar i { background: var(--fg); }
+
+  #sEnd h1 { font-family: var(--font-title); font-weight: 800; font-size: 2rem; letter-spacing: 0.08em; margin: 12px 0 4px; }
+  .sum { margin: 0 0 18px; }
+  .sum b { font-family: var(--font-title); font-size: 1.3rem; color: var(--accent); }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .c { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-height: 6.5em; display: grid; gap: 2px; align-content: start; position: relative; }
+  .c .a { font-size: 0.75rem; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+  .c p { margin: 0; font-size: 0.86rem; }
+  .c p.k { font-family: var(--font-kid); color: var(--kid); }
+  .c.miss { background: transparent; border-style: dashed; }
+  .c.miss .blank { color: var(--muted); font-size: 0.86rem; }
+  .c .tag { font-size: 0.7rem; color: var(--accent); font-weight: 700; }
+  #bAgain { margin-top: 18px; align-self: flex-start; }
+
+  @media (prefers-reduced-motion: reduce) { .stage, .stage .scene, .bubble { transition: none; } }
+</style>
+
+<div class="wrap">
+  <section class="screen" id="sTitle">
+    <h1 class="title">あと何回</h1>
+    <ul class="rules">
+      <li><b>目標：ハルが18歳になるまでに、家のローン2,600万円を返し終える。</b></li>
+      <li>画面を<b>離している</b>あいだは、働いている。お金が貯まる。</li>
+      <li>画面を<b>押している</b>あいだは、ハルのそばにいる。そのあいだは稼げず、お金が減っていく。</li>
+      <li>ときどき、ハルとの場面が起きる（「…」が合図）。押していれば最後まで見られる。離していると、すぐに過ぎる。</li>
+    </ul>
+    <button type="button" class="btn" id="bStart">はじめる</button>
+  </section>
+
+  <section class="screen" id="sPlay" hidden>
+    <div class="top"><span class="age" id="age">3歳</span><span class="state" id="state"></span></div>
+    <div class="years"><i id="yearsBar"></i></div>
+    <div class="pile">
+      <div class="label"><span>ローン返済</span><span id="money">0 / 2,600万円</span></div>
+      <div class="bar"><i id="moneyBar"></i></div>
+    </div>
+    <div class="stage" id="stage" role="button" aria-label="押しているあいだ、ゆっくり見られる">
+      <div class="scene">
+        <div class="kid" id="kid"></div>
+        <div class="bubble" id="bubble">…</div>
+      </div>
+      <div class="lines" id="lines" aria-live="polite"></div>
+      <div class="hint" id="hint">「…」が出たら、押してみて</div>
+    </div>
+  </section>
+
+  <section class="screen" id="sEnd" hidden>
+    <h1>18年</h1>
+    <p class="sum" id="sum"></p>
+    <div class="cards" id="cards"></div>
+    <button type="button" class="btn" id="bAgain">もう一度</button>
+  </section>
+</div>
+
+<script>
+(function () {
+  const START = 3, END = 18;
+  const FREE_RATE = 1 / 5;      // years per second while released
+  const LINE_SEC = 1.5;         // seconds per line while held
+  const FREE_LINE_SEC = 0.22;   // lines rush by while released
+  const GOAL = 2600;            // 万円
+  const EARN_PER_YEAR = 200;    // 万円 per year of working
+  const HOLD_COST = 15;         // 万円 per second spent holding
+  const CUE_YEARS = 0.22;
+
+  const MOMENTS = [
+    { at: 3.25, kind: "dakko", lines: ["k:だっこ", "抱きあげる。思ったより重い。", "首に腕がまわる。"] },
+    { at: 3.8, kind: "mite", lines: ["k:ねえ見て", "手のひらに、ダンゴムシ。", "k:まるくなった"] },
+    { at: 4.4, kind: "dakko", lines: ["k:だっこして", "抱きあげる。", "k:たかい！"] },
+    { at: 5.0, kind: "ehon", lines: ["k:これよんで", "同じ本を、もう一回。", "k:もういっかい"] },
+    { at: 5.6, kind: "dakko", lines: ["k:だっこ", "少しだけ抱きあげる。", "すぐに「おりる」と言う。"] },
+    { at: 6.2, kind: "rand", lines: ["ランドセルを背負って、くるっと回る。", "k:どう？"] },
+    { at: 6.9, kind: "ehon", lines: ["k:これよんで", "途中から、自分で読みはじめる。"] },
+    { at: 7.6, kind: "saka", lines: ["k:見てて", "鉄棒。一回目、だめ。", "二回目、回った。", "k:見た？"] },
+    { at: 8.3, kind: "te", lines: ["横断歩道。", "小さい手が、指をつかむ。", "渡りきると、すぐに離れる。"] },
+    { at: 9.1, kind: "ha", lines: ["k:歯、ぬけた！", "手のひらに、小さな歯。"] },
+    { at: 9.9, kind: "game", lines: ["k:いっしょにやろ", "負ける。", "k:もう一回"] },
+    { at: 10.8, kind: "egg", lines: ["目玉焼きを焼いてくれる。", "少し焦げている。", "k:おいしい？"] },
+    { at: 11.6, kind: "talk", lines: ["k:ちょっと聞いて", "友だちのこと。", "うなずくだけで、いいらしい。"] },
+    { at: 12.5, kind: "game", lines: ["k:やる？", "並んで座る。もう勝てない。"] },
+    { at: 13.4, kind: "car", lines: ["車で送る。", "ほとんど話さない。", "降りるとき、「ありがと」。"] },
+    { at: 14.5, kind: "tall", lines: ["台所で並ぶと、目の高さが同じ。", "k:抜いた？"] },
+    { at: 15.6, kind: "tea", lines: ["夜中、台所で会う。", "k:眠れないの", "二人でお茶を飲む。"] },
+    { at: 16.8, kind: "game2", lines: ["k:試合、来なくていいから", "でも、少しうれしそう。"] },
+    { at: 17.8, kind: "bye", lines: ["k:行ってきます", "大きな荷物。", "ドアが閉まる。"] }
+  ];
+  const KIND_LABEL = { dakko: "抱っこ", ehon: "絵本", game: "いっしょにゲーム" };
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage");
+
+  let age, holding, money, mi, cur, heldSec, running, last, everHeld;
+
+  function kidSVG(a) {
+    const t = (a - START) / (END - START);
+    const h = 70 + t * 110;
+    const head = 20 - t * 4;
+    const w = 34 + t * 18;
+    const bodyH = h - head * 2;
+    return { h, svg:
+      '<svg width="' + (w + 4) + '" height="' + h + '" viewBox="0 0 ' + (w + 4) + ' ' + h + '">' +
+      '<circle cx="' + (w / 2 + 2) + '" cy="' + head + '" r="' + head + '" fill="currentColor" opacity="0.85"/>' +
+      '<rect x="2" y="' + (head * 2 + 3) + '" width="' + w + '" height="' + (bodyH - 3) + '" rx="' + (w / 3) + '" fill="currentColor" opacity="0.65"/>' +
+      '</svg>' };
+  }
+
+  function drawKid() {
+    const { h, svg } = kidSVG(age);
+    const k = $("kid");
+    k.innerHTML = svg;
+    k.style.color = "var(--kid)";
+    stage.style.setProperty("--h", h + "px");
+  }
+
+  function setHold(v) {
+    if (v && !everHeld) { everHeld = true; $("hint").hidden = true; }
+    holding = v;
+    stage.classList.toggle("held", v);
+    $("state").textContent = v ? "ハルのそばにいる" : "働いている";
+    $("state").classList.toggle("on", v);
+  }
+
+  function showLine(text, lost) {
+    const box = $("lines");
+    const p = document.createElement("p");
+    const kid = text.startsWith("k:");
+    p.textContent = kid ? "「" + text.slice(2) + "」" : text;
+    p.className = (kid ? "k" : "") + (lost ? " lost" : "");
+    box.appendChild(p);
+    while (box.children.length > 4) box.removeChild(box.firstChild);
+  }
+
+  function update(dt) {
+    // holding = not working: it costs; letting go while years pass earns
+    if (holding) { heldSec += dt; money = Math.max(0, money - HOLD_COST * dt); }
+    else if (!cur) money += EARN_PER_YEAR * FREE_RATE * dt;
+
+    // a moment in progress has its own clock
+    if (cur) {
+      cur.t += dt;
+      const per = holding ? LINE_SEC : FREE_LINE_SEC;
+      if (cur.t >= per) {
+        cur.t = 0;
+        const line = cur.m.lines[cur.i];
+        cur.held.push(holding);
+        showLine(line, !holding);
+        cur.i += 1;
+        if (cur.i >= cur.m.lines.length) { cur.m.result = cur.held; cur = null; $("bubble").classList.remove("show"); }
+      }
+    } else {
+      age = Math.min(END, age + FREE_RATE * dt);
+      const next = MOMENTS[mi];
+      if (next) {
+        $("bubble").classList.toggle("show", age >= next.at - CUE_YEARS);
+        if (age >= next.at) {
+          cur = { m: next, i: 0, t: 99, held: [] };
+          mi += 1;
+          $("lines").querySelectorAll("p").forEach((p) => p.classList.add("lost"));
+        }
+      } else if (age >= END) {
+        return finish();
+      }
+    }
+  }
+
+  function render() {
+    $("age").textContent = Math.floor(age) + "歳";
+    $("yearsBar").style.width = (100 * (age - START) / (END - START)) + "%";
+    const mb = $("moneyBar");
+    mb.style.width = Math.min(100, 100 * money / GOAL) + "%";
+    mb.classList.toggle("down", holding);
+    $("money").textContent = Math.floor(money).toLocaleString("ja-JP") + " / " + GOAL.toLocaleString("ja-JP") + "万円";
+    drawKid();
+  }
+
+  function frame(t) {
+    if (!running) return;
+    const dt = Math.min(0.1, (t - last) / 1000);
+    last = t;
+    update(dt);
+    if (running) render();
+    requestAnimationFrame(frame);
+  }
+
+  function fmtSec(s) {
+    const m = Math.floor(s / 60), r = Math.round(s % 60);
+    return m ? m + "分" + r + "秒" : r + "秒";
+  }
+
+  function finish() {
+    running = false;
+    setHold(false);
+    const lastOf = {};
+    MOMENTS.forEach((m, i) => { if (KIND_LABEL[m.kind]) lastOf[m.kind] = i; });
+
+    const box = $("cards");
+    box.innerHTML = "";
+    let seen = 0;
+    MOMENTS.forEach((m, i) => {
+      const held = m.result || [];
+      const all = held.length && held.every(Boolean);
+      const some = held.some(Boolean);
+      if (all) seen += 1;
+      const c = document.createElement("div");
+      c.className = "c" + (some ? "" : " miss");
+      const a = document.createElement("div");
+      a.className = "a";
+      a.appendChild(document.createTextNode(Math.floor(m.at) + "歳"));
+      c.appendChild(a);
+      if (lastOf[m.kind] === i) {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = "最後の" + KIND_LABEL[m.kind];
+        a.appendChild(tag);
+      }
+      if (some) {
+        m.lines.forEach((l, j) => {
+          if (!held[j]) return;
+          const p = document.createElement("p");
+          const kid = l.startsWith("k:");
+          p.textContent = kid ? "「" + l.slice(2) + "」" : l;
+          if (kid) p.className = "k";
+          c.appendChild(p);
+        });
+      } else {
+        const p = document.createElement("p");
+        p.className = "blank";
+        p.textContent = "何かあった。";
+        c.appendChild(p);
+      }
+      box.appendChild(c);
+    });
+    $("sum").innerHTML = "";
+    const s1 = document.createElement("div");
+    const done = money >= GOAL;
+    s1.innerHTML = "ローン：<b></b>";
+    s1.querySelector("b").textContent = done ? "返し終えた。" : "あと " + Math.ceil(GOAL - money).toLocaleString("ja-JP") + "万円 残った。";
+    const s0 = document.createElement("div");
+    s0.className = "muted";
+    s0.textContent = "15年のうち、ハルのそばにいたのは " + fmtSec(heldSec) + "。";
+    const s2 = document.createElement("div");
+    s2.className = "muted";
+    s2.textContent = MOMENTS.length + "回のうち、最後まで見られたのは " + seen + "回。";
+    $("sum").appendChild(s1);
+    $("sum").appendChild(s0);
+    $("sum").appendChild(s2);
+    show("sEnd");
+  }
+
+  function show(id) { ["sTitle", "sPlay", "sEnd"].forEach((s) => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+
+  function start() {
+    age = START; holding = false; money = 0; mi = 0; cur = null; heldSec = 0; everHeld = false;
+    MOMENTS.forEach((m) => { delete m.result; });
+    $("lines").innerHTML = "";
+    $("hint").hidden = false;
+    $("bubble").classList.remove("show");
+    setHold(false);
+    show("sPlay");
+    running = true;
+    last = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  stage.addEventListener("pointerdown", (e) => { e.preventDefault(); stage.setPointerCapture?.(e.pointerId); setHold(true); });
+  stage.addEventListener("pointerup", () => setHold(false));
+  stage.addEventListener("pointercancel", () => setHold(false));
+  stage.addEventListener("contextmenu", (e) => e.preventDefault());
+  window.addEventListener("keydown", (e) => { if (e.code === "Space" && running) { e.preventDefault(); if (!e.repeat) setHold(true); } });
+  window.addEventListener("keyup", (e) => { if (e.code === "Space") setHold(false); });
+  window.addEventListener("blur", () => setHold(false));
+
+  $("bStart").addEventListener("click", start);
+  $("bAgain").addEventListener("click", start);
+})();
+</script>
